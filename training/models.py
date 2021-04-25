@@ -22,7 +22,7 @@ class Question(models.Model):
     """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     content = models.CharField(max_length=255)
-    quiz = models.ManyToManyField(Quiz, null=True)
+    quiz = models.ManyToManyField(Quiz)
     points = models.PositiveIntegerField(default=1)
     
     def __str__(self):

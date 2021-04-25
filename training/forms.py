@@ -42,3 +42,25 @@ class QuestionForm(forms.ModelForm):
             raise ValidationError("za mało odpowiedzi")
         if filled_corrections < 1:
             raise ValidationError("minimum jedna poprawna odpowiedź")
+
+    def save(self, commit=True, *args, **kwargs):
+        instance = super(QuestionForm, self).save(commit=False, *args, **kwargs)
+        cd = self.cleaned_data
+        # if commit:
+        breakpoint()
+        # TODO instance to obiekt Question, czyli do instance można dodać
+        #  pytania z formularzać
+        #  Pytanie: Jak zrobić update? Może właśnie przez update_or_create?
+        #  I zamiast .add() zrobić Answer.objects.create(question=instance, ...)
+        
+        question = Question.objects.update_or_create(
+            content=cd.get('content'),
+            points=cd.get('points'),
+            defaults={
+                'content': f"OR save: {cd.get('content')}",
+                'points': cd.get('points')
+            }
+        )
+        breakpoint()
+        return instance
+    
