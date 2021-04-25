@@ -11,7 +11,6 @@ class Quiz(models.Model):
     date = models.DateTimeField(null=True)
     is_active = models.BooleanField(default=False)
     name = models.CharField(max_length=255)
-    description = models.TextField(null=True)
     
     def __str__(self):
         return str(self.name)
@@ -23,7 +22,8 @@ class Question(models.Model):
     """
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     content = models.CharField(max_length=255)
-    quiz = models.ForeignKey(Quiz, on_delete=models.SET_NULL, null=True)
+    quiz = models.ManyToManyField(Quiz, null=True)
+    points = models.PositiveIntegerField(default=1)
     
     def __str__(self):
         return str(self.content)
