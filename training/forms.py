@@ -81,8 +81,8 @@ class QuestionF(forms.ModelForm):
         model = Question
         fields = ['content', 'points']
 
-    # def clean(self):
-    #     cd = super().clean()
+    def clean(self):
+        cd = super().clean()
 
         # breakpoint()
         # if Question.objects.get(content=cd.get('content')).answer_set.count() < 4:
