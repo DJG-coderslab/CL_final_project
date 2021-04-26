@@ -1,0 +1,79 @@
+.resp-table {
+    font-size: 16px;
+width: 50%;
+display: table;
+margin: auto;
+}
+
+.resp-table-caption{
+display: table-caption;
+text-align: center;
+font-size: 30px;
+font-weight: bold;
+}
+
+.resp-table-header{
+display: table-header-group;
+background-color: gray;
+font-weight: bold;
+font-size: 25px;
+}
+
+.table-header-cell{
+display: table-cell;
+padding: 10px;
+text-align: justify;
+border-bottom: 1px solid black;
+}
+
+.resp-table-body{
+display: table-row-group;
+}
+
+
+.resp-table-row{
+display: table-row;
+}
+
+.resp-table-row:hover{
+    background-color: Lavender;
+}
+.table-body-cell{
+display: table-cell;
+padding: 1px 20px;
+}
+
+a.book:link, a.book:visited {
+    text-decoration: none;
+}
+
+a.book:hover, a.book:active {
+    text-decoration: underline;
+}
+
+.cell-edit{
+display: table-cell;
+width: 5%;
+text-align: center;
+}
+
+.cell-del{
+display: table-cell;
+width: 5%;
+text-align: center;
+}
+
+.resp-table-footer {
+display: table-footer-group;
+background-color: gray;
+font-weight: bold;
+font-size: 25px;
+color: rgba(255, 255, 255, 0.45);
+}
+
+.table-footer-cell{
+display: table-cell;
+padding: 10px;
+text-align: justify;
+border-bottom: 1px solid black;
+}

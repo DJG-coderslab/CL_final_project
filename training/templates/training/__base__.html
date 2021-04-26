@@ -1,13 +1,12 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-{% load static %}
 <head>
     <meta charset="UTF-8">
-    <link rel="stylesheet" href="{% static 'training_app/styles/bootstrap.min.css' %}">
-    <link rel="stylesheet" href="{% static 'training_app/styles/table.css' %}">
-    <link rel="stylesheet" href="{% static 'training_app/styles/main.css' %}">
-    <script src="{% static 'training_app/js/bootstrap.min.js' %}"></script>
+    <link rel="stylesheet" href="{% static 'training/styles/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'training/styles/table.css' %}">
+    <link rel="stylesheet" href="{% static 'training/training/styles/main.css' %}">
+    <script src="{% static 'training/js/bootstrap.min.js' %}"></script>
 
     <title>{{title}}</title>
 </head>
@@ -20,7 +19,7 @@
                 <p class="display-6">{{ practice_title }}</p>
                 </div>
             <div class="logo col-sm">
-                <img src="{% static 'training_app/images/logo.jpg' %}" class="img-thumbnail rounded float-end" alt="logo">
+                <img src="{% static 'training/images/logo.jpg' %}" class="img-thumbnail rounded float-end" alt="logo">
             </div>
         </div>
     </div>
@@ -34,6 +33,5 @@
 </div>
 <div class="footer">
 </div>
-
 </body>
 </html>
