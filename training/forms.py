@@ -26,41 +26,44 @@ class QuestionForm(forms.ModelForm):
 
     def clean(self):
         cd = super().clean()
-        filled_answer = 0
-        filled_corrections = 0
-        answers = [cd.get('ans1'), cd.get('ans2'), cd.get('ans3'),
-                   cd.get('ans4'), cd.get('ans5'), cd.get('ans6')]
-        corrects = [cd.get('is_correct1'), cd.get('is_correct2'),
-                    cd.get('is_correct3'), cd.get('is_correct4'),
-                    cd.get('is_correct5'), cd.get('is_correct6')]
-        for ans, corr in zip(answers, corrects):
-            filled_answer += 1 if ans else 0
-            filled_corrections += 1 if corr else 0
-            if not ans and corr:
-                raise ValidationError("Nie może być samo is_correct")
-        if filled_answer < 3:
+        if Question.objects.get(content=cd.get('content')).answer_set.count() < 2:
             raise ValidationError("za mało odpowiedzi")
-        if filled_corrections < 1:
-            raise ValidationError("minimum jedna poprawna odpowiedź")
 
-    def save(self, commit=True, *args, **kwargs):
-        instance = super(QuestionForm, self).save(commit=False, *args, **kwargs)
-        cd = self.cleaned_data
-        # if commit:
-        breakpoint()
-        # TODO instance to obiekt Question, czyli do instance można dodać
-        #  pytania z formularzać
-        #  Pytanie: Jak zrobić update? Może właśnie przez update_or_create?
-        #  I zamiast .add() zrobić Answer.objects.create(question=instance, ...)
-        
-        question = Question.objects.update_or_create(
-            content=cd.get('content'),
-            points=cd.get('points'),
-            defaults={
-                'content': f"OR save: {cd.get('content')}",
-                'points': cd.get('points')
-            }
-        )
-        breakpoint()
-        return instance
+    # filled_answer = 0
+        # filled_corrections = 0
+        # answers = [cd.get('ans1'), cd.get('ans2'), cd.get('ans3'),
+        #            cd.get('ans4'), cd.get('ans5'), cd.get('ans6')]
+        # corrects = [cd.get('is_correct1'), cd.get('is_correct2'),
+        #             cd.get('is_correct3'), cd.get('is_correct4'),
+        #             cd.get('is_correct5'), cd.get('is_correct6')]
+        # for ans, corr in zip(answers, corrects):
+        #     filled_answer += 1 if ans else 0
+        #     filled_corrections += 1 if corr else 0
+        #     if not ans and corr:
+        #         raise ValidationError("Nie może być samo is_correct")
+        # if filled_answer < 3:
+        #     raise ValidationError("za mało odpowiedzi")
+        # if filled_corrections < 1:
+        #     raise ValidationError("minimum jedna poprawna odpowiedź")
+
+    # def save(self, commit=True, *args, **kwargs):
+    #     instance = super(QuestionForm, self).save(commit=False, *args, **kwargs)
+    #     cd = self.cleaned_data
+    #     # if commit:
+    #     breakpoint()
+    #     # TODO instance to obiekt Question, czyli do instance można dodać
+    #     #  pytania z formularzać
+    #     #  Pytanie: Jak zrobić update? Może właśnie przez update_or_create?
+    #     #  I zamiast .add() zrobić Answer.objects.create(question=instance, ...)
+    #
+    #     question = Question.objects.update_or_create(
+    #         content=cd.get('content'),
+    #         points=cd.get('points'),
+    #         defaults={
+    #             'content': f"OR save: {cd.get('content')}",
+    #             'points': cd.get('points')
+    #         }
+    #     )
+    #     breakpoint()
+    #     return instance
     
