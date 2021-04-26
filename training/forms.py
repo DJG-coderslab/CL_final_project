@@ -2,7 +2,7 @@
 from django import forms
 from django.core.exceptions import ValidationError
 
-from training.models import Question
+from training.models import Answer, Question
 
 
 class QuestionForm(forms.ModelForm):
@@ -66,4 +66,24 @@ class QuestionForm(forms.ModelForm):
     #     )
     #     breakpoint()
     #     return instance
-    
+
+class AnswerForm(forms.ModelForm):
+
+    class Meta:
+        model = Answer
+        fields = ['content', 'is_correct']
+
+
+
+class QuestionF(forms.ModelForm):
+
+    class Meta:
+        model = Question
+        fields = ['content', 'points']
+
+    # def clean(self):
+    #     cd = super().clean()
+
+        # breakpoint()
+        # if Question.objects.get(content=cd.get('content')).answer_set.count() < 4:
+        #     raise ValidationError("za mało odpowiedzi")
