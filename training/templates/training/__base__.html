@@ -1,0 +1,39 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+{% load static %}
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="{% static 'training_app/styles/bootstrap.min.css' %}">
+    <link rel="stylesheet" href="{% static 'training_app/styles/table.css' %}">
+    <link rel="stylesheet" href="{% static 'training_app/styles/main.css' %}">
+    <script src="{% static 'training_app/js/bootstrap.min.js' %}"></script>
+
+    <title>{{title}}</title>
+</head>
+<body>
+<header>
+    <div class="jumbotron jumbotron-fluid bg-light bg-gradient my-3 mx-3" id="banner">
+        <div class="row">
+            <div class="col-sm">
+            <p class="display-2">SBI Wrocław</p>
+                <p class="display-6">{{ practice_title }}</p>
+                </div>
+            <div class="logo col-sm">
+                <img src="{% static 'training_app/images/logo.jpg' %}" class="img-thumbnail rounded float-end" alt="logo">
+            </div>
+        </div>
+    </div>
+</header>
+<div class="h4 username_header"><p>{{first_name}} {{last_name}}</p></div>
+<p class="display-6 learn"></p>
+<div class="free_spaces"></div>
+<div class="container" id="main_div">
+    {% block pagecontent %}
+    {% endblock %}
+</div>
+<div class="footer">
+</div>
+
+</body>
+</html>

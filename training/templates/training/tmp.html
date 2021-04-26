@@ -1,0 +1,9 @@
+{% extends 'training/__base__.html' %}
+{% block pagecontent %}
+<form action="" method="POST">
+    {% csrf_token %}
+    <input type="submit">
+    {{form.as_p}}
+</form>
+
+{% endblock %}
