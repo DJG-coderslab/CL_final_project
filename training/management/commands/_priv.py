@@ -1,7 +1,7 @@
 
 from training.models import Answer, Question
 
-QUESTIONS = ['Pierwsze', 'Drugie', 'Trzecie', 'Czwarte', 'Piąte', 'Szócte',
+QUESTIONS = ['Pierwsze', 'Drugie', 'Trzecie', 'Czwarte', 'Piąte', 'Szóste',
              'Siódme', 'Ósme', 'Dziewiąte', 'Dziesiąte', 'Jedenaste']
 
 ANSWERS = ['pierwsza', 'druga', 'trzecia', 'czwarta', 'piąta', 'szósta']
