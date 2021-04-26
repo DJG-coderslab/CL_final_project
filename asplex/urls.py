@@ -19,5 +19,5 @@ from training import views as v
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('tmp/', v.Tmp.as_view()),
+    # path('tmp/', v.Tmp.as_view()),
 ]
