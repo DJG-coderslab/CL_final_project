@@ -24,7 +24,7 @@ def set_correct_answer():
     answers related to the question
     """
     for obj in Question.objects.all():
-        answer = obj.answermodel_set.all().order_by('?').first()
+        answer = obj.answer_set.all().order_by('?').first()
         answer.is_correct = True
         answer.save()
         
