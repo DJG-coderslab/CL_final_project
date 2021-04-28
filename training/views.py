@@ -23,10 +23,14 @@ class RegisterUserView(generic.CreateView):
     model = User
     form_class = UserRegisterForm
     success_url = reverse_lazy('tr:tmp')
-    print(f"reverse: {reverse_lazy}")
     template_name = 'training/tmp.html'
     
     def form_valid(self, form):
-        # breakpoint()
+        # TODO
+        #  sprawdzić, czy user jest w bazie
+        #  jeśli nie, zapisać do bazy imię, nazwikso, nr pracwnika,
+        #     dodać pracwonika do grupy pracowników
+        #  ustawić last_login na bieżącą datę
+        #  wyzwolić procedurę losowania pytań
         return super().form_valid(form)
         
