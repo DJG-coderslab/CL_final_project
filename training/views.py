@@ -19,7 +19,7 @@ class Tmp(View):
         return render(request, 'training/__base__.html', context=context)
     
     
-class RegisterUserView(generic.CreateView):
+class RegisterUserView(generic.FormView):
     model = User
     form_class = UserRegisterForm
     success_url = reverse_lazy('tr:tmp')
@@ -32,5 +32,26 @@ class RegisterUserView(generic.CreateView):
         #     dodać pracwonika do grupy pracowników
         #  ustawić last_login na bieżącą datę
         #  wyzwolić procedurę losowania pytań
+        cd = form.cleaned_data
+        employee = User.objects.update_or_create(
+            username=cd.get('username'),
+            defaults=cd
+        )
         return super().form_valid(form)
-        
+
+    def post(self, request, *args, **kwargs):
+        form = self.get_form()
+        if form.is_valid():
+            return self.form_valid(form)
+        else:
+            try:
+                User.objects.get(
+                    username=request.POST.get('username'))
+                form.cleaned_data['username'] = request.POST['username']
+                return self.form_valid(form)
+            # TODO do poprawy
+            #  brzydki sposób, ale rozwiązuje podstawowy problem jak w
+            #  formularzu na bazie modelu obejść ograniczenia unikalności
+            #  klucza? Może będzie trzeba zrobić swój formularz?
+            except User.DoesNotExist:
+                return self.form_valid(form)
