@@ -5,6 +5,8 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views import generic, View
 
+from training.models import Question
+from training.setup import QUESTIONS_IN_QUIZ
 # from training.forms import QuestionForm
 # Create your views here.
 
@@ -26,7 +28,13 @@ class RegisterUserView(generic.FormView):
     form_class = UserRegisterForm
     success_url = reverse_lazy('tr:tmp')
     template_name = 'training/tmp.html'
-    
+
+    def draw_questions(self):
+        questions = set()
+        while len(questions) < QUESTIONS_IN_QUIZ:
+            questions.add(Question.objects.all().order_by('?').first())
+        breakpoint()
+
     def form_valid(self, form):
         # TODO
         #  wyzwolić procedurę losowania pytań
@@ -38,6 +46,7 @@ class RegisterUserView(generic.FormView):
         employee.last_login = timezone.now()
         employee.save()
         Group.objects.get(name='employees').user_set.add(employee)
+        self.draw_questions()
         return super().form_valid(form)
 
     def post(self, request, *args, **kwargs):
@@ -56,3 +65,4 @@ class RegisterUserView(generic.FormView):
             #  klucza? Może będzie trzeba zrobić swój formularz?
             except User.DoesNotExist:
                 return self.form_valid(form)
+
