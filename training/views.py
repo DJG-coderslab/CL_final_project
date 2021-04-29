@@ -1,6 +1,8 @@
 from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
 from django.shortcuts import render
 from django.urls import reverse_lazy
+from django.utils import timezone
 from django.views import generic, View
 
 # from training.forms import QuestionForm
@@ -27,16 +29,15 @@ class RegisterUserView(generic.FormView):
     
     def form_valid(self, form):
         # TODO
-        #  sprawdzić, czy user jest w bazie
-        #  jeśli nie, zapisać do bazy imię, nazwikso, nr pracwnika,
-        #     dodać pracwonika do grupy pracowników
-        #  ustawić last_login na bieżącą datę
         #  wyzwolić procedurę losowania pytań
         cd = form.cleaned_data
-        employee = User.objects.update_or_create(
+        employee, _ = User.objects.update_or_create(
             username=cd.get('username'),
             defaults=cd
         )
+        employee.last_login = timezone.now()
+        employee.save()
+        Group.objects.get(name='employees').user_set.add(employee)
         return super().form_valid(form)
 
     def post(self, request, *args, **kwargs):
