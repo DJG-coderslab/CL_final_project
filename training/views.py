@@ -10,6 +10,7 @@ from training.setup import QUESTIONS_IN_QUIZ
 # from training.forms import QuestionForm
 # Create your views here.
 
+from training.models import Quiz
 from training.forms import UserRegisterForm
 
 User = get_user_model()
@@ -29,11 +30,20 @@ class RegisterUserView(generic.FormView):
     success_url = reverse_lazy('tr:tmp')
     template_name = 'training/tmp.html'
 
-    def draw_questions(self):
+    @staticmethod
+    def _create_quiz(employee=None):
+        """Creating quiz per user"""
         questions = set()
         while len(questions) < QUESTIONS_IN_QUIZ:
             questions.add(Question.objects.all().order_by('?').first())
-        breakpoint()
+        quiz_object = Quiz.objects.create()
+        quiz_name = (f"{employee.last_name}_{employee.first_name}_"
+                     f"{quiz_object.date.strftime('%Y-%m-%d')}")
+        quiz_object.name = quiz_name
+        quiz_object.save()
+        quiz_object.user.add(employee)
+        for question in questions:
+            quiz_object.question_set.add(question)
 
     def form_valid(self, form):
         # TODO
@@ -46,7 +56,7 @@ class RegisterUserView(generic.FormView):
         employee.last_login = timezone.now()
         employee.save()
         Group.objects.get(name='employees').user_set.add(employee)
-        self.draw_questions()
+        self._create_quiz(employee=employee)
         return super().form_valid(form)
 
     def post(self, request, *args, **kwargs):
