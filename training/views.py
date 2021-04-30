@@ -15,14 +15,21 @@ from training.forms import UserRegisterForm
 User = get_user_model()
 
 
-class Tmp(generic.ListView):
-    def get(self, request, *args, **kwargs):
-        breakpoint()
+# class Tmp(generic.ListView):
+#     def get(self, request, *args, **kwargs):
+#         breakpoint()
+
+
+class OkView(View):
+    """class only for test, to remove later"""
+    def get(self, request):
+        return render(request, 'training/__base__.html')
+    
     
 class RegisterUserView(generic.FormView):
     model = User
     form_class = UserRegisterForm
-    success_url = reverse_lazy('tr:tmp')
+    success_url = reverse_lazy('tr:ok')
     template_name = 'training/tmp.html'
 
     @staticmethod
@@ -56,7 +63,7 @@ class RegisterUserView(generic.FormView):
         employee.save()
         Group.objects.get(name='employees').user_set.add(employee)
         new_quiz = True
-        today = timezone.datetime.today.strftime('%Y-%m-%d')
+        today = timezone.datetime.today().strftime('%Y-%m-%d')
         for quiz in employee.quiz_set.all():
             if quiz.is_active:
                 if today == quiz.date.strftime('%Y-%m-%d'):
