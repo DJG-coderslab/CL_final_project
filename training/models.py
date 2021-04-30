@@ -46,3 +46,17 @@ class Answer(models.Model):
     def __str__(self):
         return str(self.content)
 
+
+class Result(models.Model):
+    """There are the reference to the answer of employee"""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user = models.ManyToManyField(User)
+    quiz = models.ManyToManyField(Quiz)
+    answer = models.ManyToManyField(Answer, through='ResultAnswer')
+
+
+class ResultAnswer(models.Model):
+    result = models.ForeignKey(Result, on_delete=models.CASCADE)
+    answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
+    employee_answer = models.BooleanField(default=False)
+
