@@ -5,12 +5,11 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views import generic, View
 
-from training.models import Question
+from training.models import Answer, Question, Quiz, Result
 from training.setup import QUESTIONS_IN_QUIZ
 # from training.forms import QuestionForm
 # Create your views here.
 
-from training.models import Quiz
 from training.forms import UserRegisterForm
 
 User = get_user_model()
@@ -36,14 +35,19 @@ class RegisterUserView(generic.FormView):
         questions = set()
         while len(questions) < QUESTIONS_IN_QUIZ:
             questions.add(Question.objects.all().order_by('?').first())
+        result_object = Result.objects.create()
         quiz_object = Quiz.objects.create()
         quiz_name = (f"{employee.last_name}_{employee.first_name}_"
                      f"{quiz_object.date.strftime('%Y-%m-%d')}")
         quiz_object.name = quiz_name
         quiz_object.save()
         quiz_object.user.add(employee)
+        result_object.user.add(employee)
+        result_object.quiz.add(quiz_object)
         for question in questions:
             quiz_object.question_set.add(question)
+            for answer in question.answer_set.all():
+                result_object.answer.add(answer)
 
     def form_valid(self, form):
         # TODO
