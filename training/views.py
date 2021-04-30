@@ -15,13 +15,9 @@ from training.forms import UserRegisterForm
 User = get_user_model()
 
 
-class Tmp(View):
+class Tmp(generic.ListView):
     def get(self, request, *args, **kwargs):
-        context = {
-            'form': UserRegisterForm()
-        }
-        return render(request, 'training/__base__.html', context=context)
-    
+        breakpoint()
     
 class RegisterUserView(generic.FormView):
     model = User
@@ -40,6 +36,7 @@ class RegisterUserView(generic.FormView):
         quiz_name = (f"{employee.last_name}_{employee.first_name}_"
                      f"{quiz_object.date.strftime('%Y-%m-%d')}")
         quiz_object.name = quiz_name
+        quiz_object.is_active = True
         quiz_object.save()
         quiz_object.user.add(employee)
         result_object.user.add(employee)
@@ -50,8 +47,6 @@ class RegisterUserView(generic.FormView):
                 result_object.answer.add(answer)
 
     def form_valid(self, form):
-        # TODO
-        #  wyzwolić procedurę losowania pytań
         cd = form.cleaned_data
         employee, _ = User.objects.update_or_create(
             username=cd.get('username'),
@@ -60,7 +55,17 @@ class RegisterUserView(generic.FormView):
         employee.last_login = timezone.now()
         employee.save()
         Group.objects.get(name='employees').user_set.add(employee)
-        self._create_quiz(employee=employee)
+        new_quiz = True
+        today = timezone.datetime.today.strftime('%Y-%m-%d')
+        for quiz in employee.quiz_set.all():
+            if quiz.is_active:
+                if today == quiz.date.strftime('%Y-%m-%d'):
+                    new_quiz = False
+                else:
+                    quiz.is_active = False
+                    quiz.save()
+        if new_quiz:
+            self._create_quiz(employee=employee)
         return super().form_valid(form)
 
     def post(self, request, *args, **kwargs):
