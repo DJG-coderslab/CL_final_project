@@ -1,4 +1,6 @@
-from django.contrib.auth import get_user_model
+from django.contrib.auth import get_user_model, login, logout
+from django.contrib.auth.mixins import AccessMixin, LoginRequiredMixin
+from django.contrib.auth.views import LoginView
 from django.contrib.auth.models import Group
 from django.shortcuts import render
 from django.urls import reverse_lazy
@@ -15,14 +17,46 @@ from training.forms import UserRegisterForm
 User = get_user_model()
 
 
-# class Tmp(generic.ListView):
-#     def get(self, request, *args, **kwargs):
-#         breakpoint()
+class AppLoginRequiredMixin(LoginRequiredMixin):
+    """Settings for application"""
+    # TODO Tylko czy to jest prawidłowe działanie? Czy można bezkarnie
+    #  nadpisywac klasę jak metodę?
+    #  Jednak nie, lepiej używać swoich nazw, bo po czasie będzie problem,
+    #  gdzie szukać, nie będzie jednoznaczności
+    login_url = reverse_lazy('tr:register')
+    permission_denied_message = "Trzeba się zarejestrować!"
+
+
+class Tmp(AppLoginRequiredMixin, generic.ListView):
+# class Tmp(AccessMixin, generic.ListView):
+    
+    # login_url = reverse_lazy('tr:register')
+    # permission_denied_message = "Trzeba się zarejestrować!"
+    # queryset = User.objects.all()
+    # template_name = 'training/__base__.html'
+    queryset = User.objects.all()
+    template_name = 'training/__base__.html'
+
+
+def get(self, request, *args, **kwargs):
+        print("TmpView")
+        breakpoint()
+        return super().get(request, *args, **kwargs)
+
+
+class TmpLogout(View):
+    def get(self, request):
+        # breakpoint()
+        logout(request)
+        # breakpoint()
+        return render(request, 'training/__base__.html')
 
 
 class OkView(View):
     """class only for test, to remove later"""
     def get(self, request):
+        print("OkView")
+        breakpoint()
         return render(request, 'training/__base__.html')
     
     
@@ -30,7 +64,7 @@ class RegisterUserView(generic.FormView):
     model = User
     form_class = UserRegisterForm
     success_url = reverse_lazy('tr:ok')
-    template_name = 'training/tmp.html'
+    template_name = 'training/register.html'
 
     @staticmethod
     def _create_quiz(employee=None):
@@ -73,6 +107,7 @@ class RegisterUserView(generic.FormView):
                     quiz.save()
         if new_quiz:
             self._create_quiz(employee=employee)
+        login(self.request, employee)
         return super().form_valid(form)
 
     def post(self, request, *args, **kwargs):
@@ -92,10 +127,6 @@ class RegisterUserView(generic.FormView):
             except User.DoesNotExist:
                 return self.form_valid(form)
 
-class Tmp(View):
-    def get(self, request, *args, **kwargs):
-        questions = Question.objects.all().order_by('?').first()
-        context = {
-            'question': questions,
-        }
-        return render(request, 'training/tmp.html', context=context)
+
+class QuestionView(generic.ListView):
+    pass
