@@ -1,11 +1,14 @@
 {% extends 'training/__base__.html' %}
 {% block pagecontent %}
-
+<form method="POST" action="">
 {% for q in questions%}
 <p class="h4">{{q}}</p>
 {% for a in q.answer_set.all %}
-<p>{{a}}</p>
+    <p><input type="radio" name="answer">{{a}}</input></p>
 {% endfor %}
 {% endfor %}
-<hr>
+
+</form>
+
+    <hr>
 {% endblock %}

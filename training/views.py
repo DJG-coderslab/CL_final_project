@@ -26,29 +26,36 @@ class AppLoginRequiredMixin(LoginRequiredMixin):
     login_url = reverse_lazy('tr:register')
     permission_denied_message = "Trzeba się zarejestrować!"
 
-
-class Tmp(AppLoginRequiredMixin, generic.ListView):
-   
-    context_object_name = 'questions'
-    paginate_by = 1
-    template_name = 'training/question.html'
-    
-    def get_queryset(self):
-        u = self.request.user.username
-        user = User.objects.get(username=u)
-        quiz = user.quiz_set.filter(is_active=True)[0]
+class Tmp(AppLoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        loged_employee = request.user
+        employee = User.objects.get(username=loged_employee)
+        quiz = employee.quiz_set.filter(is_active=True)[0]
         questions = quiz.question_set.all()
-        queryset = questions
-        # breakpoint()
-        return queryset
-        
-        
+        context = {
+            'questions': questions,
+        }
+        return render(request, 'training/question.html', context=context)
+    
+    def post(self, request, *args, **kwargs):
+        context = {}
+        return render(request, 'training/question.html', context=context)
 
 
-def get(self, request, *args, **kwargs):
-        print("TmpView")
-        # breakpoint()
-        return super().get(request, *args, **kwargs)
+# class Tmp(AppLoginRequiredMixin, generic.ListView):
+   
+    # context_object_name = 'questions'
+    # paginate_by = 1
+    # template_name = 'training/question.html'
+    #
+    # def get_queryset(self):
+    #     u = self.request.user.username
+    #     user = User.objects.get(username=u)
+    #     quiz = user.quiz_set.filter(is_active=True)[0]
+    #     questions = quiz.question_set.all()
+    #     queryset = questions
+    #     # breakpoint()
+    #     return queryset
 
 
 class TmpLogout(View):
