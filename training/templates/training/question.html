@@ -4,11 +4,35 @@
 {% for q in questions%}
 <p class="h4">{{q}}</p>
 {% for a in q.answer_set.all %}
-    <p><input type="radio" name="answer">{{a}}</input></p>
+    <p><input type="radio" name="answer"> &nbsp; &nbsp;{{a}}</input></p>
 {% endfor %}
 {% endfor %}
 
 </form>
 
     <hr>
+
+<nav aria-label="Page navigation example">
+    <ul class="pagination">
+        {% if questions.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page=1">&laquo; pierwsze</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{questions.previous_page_number}}">poprzednie</a>
+        </li>
+        {% endif %}
+        <li class="page-item page-link">
+            pytanie {{questions.number}} z {{questions.paginator.num_pages}}
+        </li>
+        {% if questions.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{questions.next_page_number}}">następne</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{questions.paginator.num_pages"">ostatnie</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
 {% endblock %}

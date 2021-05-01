@@ -1,3 +1,5 @@
+
+from django.core.paginator import Paginator
 from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.mixins import AccessMixin, LoginRequiredMixin
 from django.contrib.auth.views import LoginView
@@ -28,10 +30,13 @@ class AppLoginRequiredMixin(LoginRequiredMixin):
 
 class Tmp(AppLoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        loged_employee = request.user
-        employee = User.objects.get(username=loged_employee)
+        logged_employee = request.user
+        employee = User.objects.get(username=logged_employee)
         quiz = employee.quiz_set.filter(is_active=True)[0]
         questions = quiz.question_set.all()
+        paginator = Paginator(questions, 1)
+        page = request.GET.get('page')
+        questions = paginator.get_page(page)
         context = {
             'questions': questions,
         }
