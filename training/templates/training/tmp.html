@@ -6,4 +6,12 @@
     {{form.as_p}}
 </form>
 
+<p>{{question.content}}</p>
+
+<ul>
+    {% for answer in question.answer_set.all %}
+    <li>{{answer}}</li>
+    {% endfor %}
+</ul>
+
 {% endblock %}

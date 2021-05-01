@@ -6,7 +6,7 @@ from random import randint
 
 from training.models import Answer, Question, Quiz, Result
 
-QUESTIONS = ['Pierwsze', 'Drugie', 'Trzecie', 'Czwarte', 'Piąte', 'Szócte',
+QUESTIONS = ['Pierwsze', 'Drugie', 'Trzecie', 'Czwarte', 'Piąte', 'Szóste',
              'Siódme', 'Ósme', 'Dziewiąte', 'Dziesiąte', 'Jedenaste']
 
 ANSWERS = ['pierwsza', 'druga', 'trzecia', 'czwarta', 'piąta', 'szósta']

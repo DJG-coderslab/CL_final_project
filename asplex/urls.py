@@ -18,6 +18,11 @@ from django.urls import include, path
 from training import views as v
 
 urlpatterns = [
+<<<<<<< HEAD
     path('admin/', admin.site.urls, name='admin'),
     path('', include('training.urls', namespace='tr')),
+=======
+    path('admin/', admin.site.urls),
+    path('tmp/', v.Tmp.as_view()),
+>>>>>>> for_merge
 ]
