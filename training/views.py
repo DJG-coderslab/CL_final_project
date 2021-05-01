@@ -92,3 +92,10 @@ class RegisterUserView(generic.FormView):
             except User.DoesNotExist:
                 return self.form_valid(form)
 
+class Tmp(View):
+    def get(self, request, *args, **kwargs):
+        questions = Question.objects.all().order_by('?').first()
+        context = {
+            'question': questions,
+        }
+        return render(request, 'training/tmp.html', context=context)
