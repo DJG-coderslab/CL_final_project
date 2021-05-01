@@ -1,0 +1,11 @@
+{% extends 'training/__base__.html' %}
+{% block pagecontent %}
+
+{% for q in questions%}
+<p class="h4">{{q}}</p>
+{% for a in q.answer_set.all %}
+<p>{{a}}</p>
+{% endfor %}
+{% endfor %}
+<hr>
+{% endblock %}

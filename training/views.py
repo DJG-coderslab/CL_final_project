@@ -28,19 +28,26 @@ class AppLoginRequiredMixin(LoginRequiredMixin):
 
 
 class Tmp(AppLoginRequiredMixin, generic.ListView):
-# class Tmp(AccessMixin, generic.ListView):
+   
+    context_object_name = 'questions'
+    paginate_by = 1
+    template_name = 'training/question.html'
     
-    # login_url = reverse_lazy('tr:register')
-    # permission_denied_message = "Trzeba się zarejestrować!"
-    # queryset = User.objects.all()
-    # template_name = 'training/__base__.html'
-    queryset = User.objects.all()
-    template_name = 'training/__base__.html'
+    def get_queryset(self):
+        u = self.request.user.username
+        user = User.objects.get(username=u)
+        quiz = user.quiz_set.filter(is_active=True)[0]
+        questions = quiz.question_set.all()
+        queryset = questions
+        # breakpoint()
+        return queryset
+        
+        
 
 
 def get(self, request, *args, **kwargs):
         print("TmpView")
-        breakpoint()
+        # breakpoint()
         return super().get(request, *args, **kwargs)
 
 
@@ -56,7 +63,7 @@ class OkView(View):
     """class only for test, to remove later"""
     def get(self, request):
         print("OkView")
-        breakpoint()
+        # breakpoint()
         return render(request, 'training/__base__.html')
     
     
