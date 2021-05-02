@@ -29,21 +29,45 @@ class AppLoginRequiredMixin(LoginRequiredMixin):
     permission_denied_message = "Trzeba się zarejestrować!"
 
 class Tmp(AppLoginRequiredMixin, View):
-    def get(self, request, *args, **kwargs):
-        logged_employee = request.user
-        employee = User.objects.get(username=logged_employee)
+    
+    @staticmethod
+    def prepare_question(request):
+        logged_user = request.user
+        employee = User.objects.get(username=logged_user)
         quiz = employee.quiz_set.filter(is_active=True)[0]
         questions = quiz.question_set.all()
         paginator = Paginator(questions, 1)
+        return paginator
+    
+    def get(self, request, *args, **kwargs):
+        # logged_employee = request.user
+        # employee = User.objects.get(username=logged_employee)
+        # quiz = employee.quiz_set.filter(is_active=True)[0]
+        # questions = quiz.question_set.all()
+        # paginator = Paginator(questions, 1)
+        paginator = self.prepare_question(request)
         page = request.GET.get('page')
         questions = paginator.get_page(page)
+        # breakpoint()
+        request.session['question_number'] = page
         context = {
             'questions': questions,
         }
         return render(request, 'training/question.html', context=context)
     
     def post(self, request, *args, **kwargs):
-        context = {}
+        paginator = self.prepare_question(request)
+        page = request.session.get('question_number')
+        page = str(int(page) + 1)
+        page = paginator.num_pages if int(page) > paginator.num_pages else page
+        page = '1' if int(page) < 1 else page
+        print(f"PAGE: {page}")
+        questions = paginator.get_page(page)
+        request.session['question_number'] = page
+        context = {
+            'questions': questions
+        }
+        # breakpoint()
         return render(request, 'training/question.html', context=context)
 
 

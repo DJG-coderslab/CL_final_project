@@ -1,13 +1,19 @@
 {% extends 'training/__base__.html' %}
 {% block pagecontent %}
 <form method="POST" action="">
+    {% csrf_token %}
 {% for q in questions%}
 <p class="h4">{{q}}</p>
 {% for a in q.answer_set.all %}
     <p><input type="radio" name="answer"> &nbsp; &nbsp;{{a}}</input></p>
 {% endfor %}
 {% endfor %}
-
+<div>
+    <input type="submit" name="answer" value="odpowiedź">
+</div>
+    <div>
+        <input type="submit" name="end" value="koniec">
+    </div>
 </form>
 
     <hr>
@@ -30,7 +36,7 @@
             <a class="page-link" href="?page={{questions.next_page_number}}">następne</a>
         </li>
         <li class="page-item">
-            <a class="page-link" href="?page={{questions.paginator.num_pages"">ostatnie</a>
+            <a class="page-link" href="?page={{questions.paginator.num_pages}}">ostatnie</a>
         </li>
         {% endif %}
     </ul>
