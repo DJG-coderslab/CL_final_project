@@ -9,7 +9,7 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views import generic, View
 
-from training.models import Answer, Question, Quiz, Result
+from training.models import Answer, Question, Quiz, Result, ResultAnswer
 from training.setup import QUESTIONS_IN_QUIZ
 # from training.forms import QuestionForm
 # Create your views here.
@@ -28,46 +28,57 @@ class AppLoginRequiredMixin(LoginRequiredMixin):
     login_url = reverse_lazy('tr:register')
     permission_denied_message = "Trzeba się zarejestrować!"
 
-class Tmp(AppLoginRequiredMixin, View):
+
+class OneQuestionView(AppLoginRequiredMixin, View):
+   
+    def __init__(self, *args, **kwargs):
+        self.employee = None
+        self.quiz = None
+        self.paginator = None
+        self.current_question = None
+        self.page = None
+        super().__init__(*args, **kwargs)
     
-    @staticmethod
-    def prepare_question(request):
-        logged_user = request.user
-        employee = User.objects.get(username=logged_user)
-        quiz = employee.quiz_set.filter(is_active=True)[0]
-        questions = quiz.question_set.all()
+    def setup_setting(self, request):
+        self.employee = User.objects.get(username=request.user)
+        self.quiz = self.employee.quiz_set.filter(is_active=True).first()
+        self.paginator = self.prepare_question(request)
+        self.page = request.session.get('question_number')
+        self.current_question = self.paginator.get_page(self.page)[0]
+    
+    def prepare_question(self, request):
+        questions = self.quiz.question_set.all()
         paginator = Paginator(questions, 1)
         return paginator
     
+    def write_answer(self, request, question):
+        answer_id = (request.POST['employee_choice'])
+        result = Result.objects.get(quiz=self.quiz)
+        for answer in self.current_question.answer_set.all():
+            obj = result.resultanswer_set.get(answer=answer)
+            obj.employee_answer = False
+            obj.save()
+        result_answer = result.resultanswer_set.get(answer=answer_id)
+        result_answer.employee_answer = True
+        result_answer.save()
+    
     def get(self, request, *args, **kwargs):
-        # logged_employee = request.user
-        # employee = User.objects.get(username=logged_employee)
-        # quiz = employee.quiz_set.filter(is_active=True)[0]
-        # questions = quiz.question_set.all()
-        # paginator = Paginator(questions, 1)
-        paginator = self.prepare_question(request)
+        self.setup_setting(request)
         page = request.GET.get('page')
-        questions = paginator.get_page(page)
-        # breakpoint()
+        questions = self.paginator.get_page(page)
         request.session['question_number'] = page
-        context = {
-            'questions': questions,
-        }
+        context = {'questions': questions,}
         return render(request, 'training/question.html', context=context)
     
     def post(self, request, *args, **kwargs):
-        paginator = self.prepare_question(request)
-        page = request.session.get('question_number')
-        page = str(int(page) + 1)
-        page = paginator.num_pages if int(page) > paginator.num_pages else page
-        page = '1' if int(page) < 1 else page
-        print(f"PAGE: {page}")
-        questions = paginator.get_page(page)
+        self.setup_setting(request)
+        self.write_answer(request, self.current_question)
+        page = str(int(self.page) + 1)
+        pgn = self.paginator
+        page = pgn.num_pages if int(page) > pgn.num_pages else page
+        questions = self.paginator.get_page(page)
         request.session['question_number'] = page
-        context = {
-            'questions': questions
-        }
-        # breakpoint()
+        context = {'questions': questions,}
         return render(request, 'training/question.html', context=context)
 
 
