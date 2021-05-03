@@ -1,4 +1,6 @@
 
+from collections import defaultdict
+
 from django.core.paginator import Paginator
 from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.mixins import AccessMixin, LoginRequiredMixin
@@ -42,12 +44,13 @@ class OneQuestionView(AppLoginRequiredMixin, View):
     def setup_setting(self, request):
         self.employee = User.objects.get(username=request.user)
         self.quiz = self.employee.quiz_set.get(is_active=True)
-        self.paginator = self.prepare_question(request)
+        self.paginator = self.prepare_paginator(request)
         self.page = request.session.get('question_number')
         self.current_question = self.paginator.get_page(self.page)[0]
     
-    def prepare_question(self, request):
+    def prepare_paginator(self, request):
         questions = self.quiz.question_set.all()
+        questions = self.prepare_questions()
         paginator = Paginator(questions, 1)
         return paginator
     
@@ -80,22 +83,60 @@ class OneQuestionView(AppLoginRequiredMixin, View):
         request.session['question_number'] = page
         context = {'questions': questions}
         return render(request, 'training/question.html', context=context)
+    
+    def prepare_questions(self):
+        questions = []
+        for question in self.quiz.question_set.all():
+            questions_dict = {}
+            questions_dict['content'] = question.content
+            answers = []
+            for answer in question.answer_set.all():
+                answers_dict = {}
+                answers_dict['id'] = answer.id
+                answers_dict['content'] = answer.content
+                answers_dict['choice'] = self.quiz.result_set.first().resultanswer_set.get(answer=answer).employee_answer
+                answers.append(answers_dict)
+            questions_dict['answers'] = answers
+            questions.append(questions_dict)
+        return questions
 
-
-# class Tmp(AppLoginRequiredMixin, generic.ListView):
-   
-    # context_object_name = 'questions'
-    # paginate_by = 1
-    # template_name = 'training/question.html'
-    #
-    # def get_queryset(self):
-    #     u = self.request.user.username
-    #     user = User.objects.get(username=u)
-    #     quiz = user.quiz_set.filter(is_active=True)[0]
-    #     questions = quiz.question_set.all()
-    #     queryset = questions
-    #     # breakpoint()
-    #     return queryset
+class Tmp(AppLoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        employee = User.objects.get(username=request.user)
+        quiz = employee.quiz_set.get(is_active=True)
+        my_out = []
+        print(quiz.id)
+        for question in quiz.question_set.all():
+            qq = {}
+            qq['content'] = question.content
+            print(question.id)
+            ans = []
+            for answer in question.answer_set.all():
+                print(f"\t{answer.id}")
+                a = {}
+                a['id'] = answer.id
+                a['content'] = answer.content
+                a['choice'] = quiz.result_set.first().resultanswer_set.get(answer=answer).employee_answer
+                """Powyższe działa, bo de facto między quiz a result jest
+                   relacja jeden do wielu. Jeśli będzie więcej rezultatów dla
+                   jednego quizu, będzie trzeba pomyśleć nad jednoznaczną
+                   identyfikacją konkretnego rezultatu"""
+                ans.append(a)
+            qq['answers'] = ans
+            my_out.append(qq)
+        context = {
+            # 'questions': [
+            #     {'content': 'raz', 'answers': [
+            #         {'id': 'id_raz', 'content': 'ctx_1', 'choice': 'TAK'},
+            #         {'id': 'a:2', 'content': 'ctx2', 'choice': 'NIE'}
+            #     ]
+            #      },
+            #     {'content': 'dwa'},
+            #     {'content': 'trzy'}
+            # ]
+            'questions': my_out
+        }
+        return render(request, 'training/tmp.html', context=context)
 
 
 class TmpLogout(View):

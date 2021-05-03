@@ -3,8 +3,8 @@
 <form method="POST" action="">
     {% csrf_token %}
 {% for q in questions%}
-<p class="h4">{{q}}</p>
-{% for a in q.answer_set.all %}
+<p class="h4">{{q.content}}</p>
+{% for a in q.answers %}
     <p><input type="radio" name="employee_choice" value="{{a.id}}"> &nbsp; &nbsp;{{a.content}}</input></p>
 {% endfor %}
 {% endfor %}

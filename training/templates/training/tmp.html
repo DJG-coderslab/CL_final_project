@@ -14,4 +14,16 @@
     {% endfor %}
 </ul>
 
+<hr>{% for question in questions %}
+<p>{{question.content}}</p>
+    {% for answer in question.answers %}
+<p>---- {{answer.id}}-{{answer.content}}-{{answer.choice}}</p>
+    {% endfor %}
+<hr>
+{% endfor %}
+
+<hr>
+
+
+
 {% endblock %}
