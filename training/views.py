@@ -41,7 +41,7 @@ class OneQuestionView(AppLoginRequiredMixin, View):
     
     def setup_setting(self, request):
         self.employee = User.objects.get(username=request.user)
-        self.quiz = self.employee.quiz_set.filter(is_active=True).first()
+        self.quiz = self.employee.quiz_set.get(is_active=True)
         self.paginator = self.prepare_question(request)
         self.page = request.session.get('question_number')
         self.current_question = self.paginator.get_page(self.page)[0]
@@ -51,7 +51,7 @@ class OneQuestionView(AppLoginRequiredMixin, View):
         paginator = Paginator(questions, 1)
         return paginator
     
-    def write_answer(self, request, question):
+    def write_answer(self, request):
         answer_id = (request.POST['employee_choice'])
         result = Result.objects.get(quiz=self.quiz)
         for answer in self.current_question.answer_set.all():
@@ -67,18 +67,18 @@ class OneQuestionView(AppLoginRequiredMixin, View):
         page = request.GET.get('page')
         questions = self.paginator.get_page(page)
         request.session['question_number'] = page
-        context = {'questions': questions,}
+        context = {'questions': questions}
         return render(request, 'training/question.html', context=context)
     
     def post(self, request, *args, **kwargs):
         self.setup_setting(request)
-        self.write_answer(request, self.current_question)
+        self.write_answer(request)
         page = str(int(self.page) + 1)
         pgn = self.paginator
         page = pgn.num_pages if int(page) > pgn.num_pages else page
         questions = self.paginator.get_page(page)
         request.session['question_number'] = page
-        context = {'questions': questions,}
+        context = {'questions': questions}
         return render(request, 'training/question.html', context=context)
 
 
