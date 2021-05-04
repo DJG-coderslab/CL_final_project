@@ -50,21 +50,21 @@ class OneQuestionView(AppLoginRequiredMixin, View):
         self.current_question = Question.objects.get(id=current_obj.get('id'))
     
     def prepare_paginator(self):
-        questions = self.quiz.question_set.all()
         questions = self.prepare_questions()
         paginator = Paginator(questions, 1)
         return paginator
     
     def write_answer(self, request):
-        answer_id = (request.POST['employee_choice'])
-        result = Result.objects.get(quiz=self.quiz)
-        for answer in self.current_question.answer_set.all():
-            obj = result.resultanswer_set.get(answer=answer)
-            obj.employee_answer = False
-            obj.save()
-        result_answer = result.resultanswer_set.get(answer=answer_id)
-        result_answer.employee_answer = True
-        result_answer.save()
+        answer_id = request.POST.get('employee_choice')
+        if answer_id:
+            result = Result.objects.get(quiz=self.quiz)
+            for answer in self.current_question.answer_set.all():
+                obj = result.resultanswer_set.get(answer=answer)
+                obj.employee_answer = False
+                obj.save()
+            result_answer = result.resultanswer_set.get(answer=answer_id)
+            result_answer.employee_answer = True
+            result_answer.save()
     
     def get(self, request, *args, **kwargs):
         self.setup_setting(request)
@@ -77,15 +77,30 @@ class OneQuestionView(AppLoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         self.setup_setting(request)
         self.write_answer(request)
-        self.paginator = self.prepare_paginator()   # trzeba odświeżyć paginator po zapisie do DB
-        page = str(int(self.page) + 1)
-        pgn = self.paginator
-        page = pgn.num_pages if int(page) > pgn.num_pages else page
-        questions = self.paginator.get_page(page)
-        request.session['question_number'] = page
-        context = {'questions': questions}
-        return render(request, 'training/question.html', context=context)
-    
+        print(f"QUIZ_ID {self.quiz.id}")
+        if request.POST.get('answer_button'):
+            self.paginator = self.prepare_paginator()   # trzeba odświeżyć paginator po zapisie do DB
+            page = str(int(self.page) + 1)
+            pgn = self.paginator
+            page = pgn.num_pages if int(page) > pgn.num_pages else page
+            questions = self.paginator.get_page(page)
+            request.session['question_number'] = page
+            context = {'questions': questions}
+            return render(request, 'training/question.html', context=context)
+        elif request.POST.get('end_button'):
+            result = Result.objects.get(quiz=self.quiz)
+            for question in self.quiz.question_set.all():
+                print(f"Q: {question}")
+                for answer in question.answer_set.all():
+                    is_correct = answer.is_correct
+                    employee_answer = answer.resultanswer_set.get(result=result).employee_answer
+                    if is_correct and employee_answer:
+                        print(f"=== OK ===")
+            print(f"QUIZ {self.quiz.id}")
+            return render(request, 'training/summary.html')
+        else:
+            return render(request, 'training/tmp.html')
+
     def prepare_questions(self):
         questions = []
         for question in self.quiz.question_set.all():
@@ -99,47 +114,15 @@ class OneQuestionView(AppLoginRequiredMixin, View):
                 answers_dict['content'] = answer.content
                 answers_dict['choice'] = self.quiz.result_set.first().resultanswer_set.get(answer=answer).employee_answer
                 answers.append(answers_dict)
-                print(self.quiz.result_set.first().resultanswer_set.get(
-                    answer=answer).employee_answer)
             questions_dict['answers'] = answers
             questions.append(questions_dict)
         return questions
 
+
 class Tmp(AppLoginRequiredMixin, View):
     def get(self, request, *args, **kwargs):
-        employee = User.objects.get(username=request.user)
-        quiz = employee.quiz_set.get(is_active=True)
-        my_out = []
-        print(quiz.id)
-        for question in quiz.question_set.all():
-            qq = {}
-            qq['content'] = question.content
-            print(question.id)
-            ans = []
-            for answer in question.answer_set.all():
-                print(f"\t{answer.id}")
-                a = {}
-                a['id'] = answer.id
-                a['content'] = answer.content
-                a['choice'] = quiz.result_set.first().resultanswer_set.get(answer=answer).employee_answer
-                """Powyższe działa, bo de facto między quiz a result jest
-                   relacja jeden do wielu. Jeśli będzie więcej rezultatów dla
-                   jednego quizu, będzie trzeba pomyśleć nad jednoznaczną
-                   identyfikacją konkretnego rezultatu"""
-                ans.append(a)
-            qq['answers'] = ans
-            my_out.append(qq)
         context = {
-            # 'questions': [
-            #     {'content': 'raz', 'answers': [
-            #         {'id': 'id_raz', 'content': 'ctx_1', 'choice': 'TAK'},
-            #         {'id': 'a:2', 'content': 'ctx2', 'choice': 'NIE'}
-            #     ]
-            #      },
-            #     {'content': 'dwa'},
-            #     {'content': 'trzy'}
-            # ]
-            'questions': my_out
+            'questions': ['nic']
         }
         return render(request, 'training/tmp.html', context=context)
 
