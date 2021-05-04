@@ -44,12 +44,12 @@ class OneQuestionView(AppLoginRequiredMixin, View):
     def setup_setting(self, request):
         self.employee = User.objects.get(username=request.user)
         self.quiz = self.employee.quiz_set.get(is_active=True)
-        self.paginator = self.prepare_paginator(request)
+        self.paginator = self.prepare_paginator()
         self.page = request.session.get('question_number')
         current_obj = self.paginator.get_page(self.page)[0]
         self.current_question = Question.objects.get(id=current_obj.get('id'))
     
-    def prepare_paginator(self, request):
+    def prepare_paginator(self):
         questions = self.quiz.question_set.all()
         questions = self.prepare_questions()
         paginator = Paginator(questions, 1)
@@ -77,6 +77,7 @@ class OneQuestionView(AppLoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         self.setup_setting(request)
         self.write_answer(request)
+        self.paginator = self.prepare_paginator()   # trzeba odświeżyć paginator po zapisie do DB
         page = str(int(self.page) + 1)
         pgn = self.paginator
         page = pgn.num_pages if int(page) > pgn.num_pages else page
