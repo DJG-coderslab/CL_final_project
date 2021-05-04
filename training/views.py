@@ -77,7 +77,6 @@ class OneQuestionView(AppLoginRequiredMixin, View):
     def post(self, request, *args, **kwargs):
         self.setup_setting(request)
         self.write_answer(request)
-        print(f"QUIZ_ID {self.quiz.id}")
         if request.POST.get('answer_button'):
             self.paginator = self.prepare_paginator()   # trzeba odświeżyć paginator po zapisie do DB
             page = str(int(self.page) + 1)
@@ -88,16 +87,22 @@ class OneQuestionView(AppLoginRequiredMixin, View):
             context = {'questions': questions}
             return render(request, 'training/question.html', context=context)
         elif request.POST.get('end_button'):
+            scores = 0
+            max_points = 0
             result = Result.objects.get(quiz=self.quiz)
             for question in self.quiz.question_set.all():
-                print(f"Q: {question}")
+                max_points += question.points
                 for answer in question.answer_set.all():
                     is_correct = answer.is_correct
                     employee_answer = answer.resultanswer_set.get(result=result).employee_answer
                     if is_correct and employee_answer:
                         print(f"=== OK ===")
-            print(f"QUIZ {self.quiz.id}")
-            return render(request, 'training/summary.html')
+                        scores += question.points
+            context = {
+                'scores': scores,
+                'max_points': max_points
+            }
+            return render(request, 'training/summary.html', context=context)
         else:
             return render(request, 'training/tmp.html')
 
