@@ -46,7 +46,8 @@ class OneQuestionView(AppLoginRequiredMixin, View):
         self.quiz = self.employee.quiz_set.get(is_active=True)
         self.paginator = self.prepare_paginator(request)
         self.page = request.session.get('question_number')
-        self.current_question = self.paginator.get_page(self.page)[0]
+        current_obj = self.paginator.get_page(self.page)[0]
+        self.current_question = Question.objects.get(id=current_obj.get('id'))
     
     def prepare_paginator(self, request):
         questions = self.quiz.question_set.all()
@@ -88,6 +89,7 @@ class OneQuestionView(AppLoginRequiredMixin, View):
         questions = []
         for question in self.quiz.question_set.all():
             questions_dict = {}
+            questions_dict['id'] = question.id
             questions_dict['content'] = question.content
             answers = []
             for answer in question.answer_set.all():
@@ -96,6 +98,8 @@ class OneQuestionView(AppLoginRequiredMixin, View):
                 answers_dict['content'] = answer.content
                 answers_dict['choice'] = self.quiz.result_set.first().resultanswer_set.get(answer=answer).employee_answer
                 answers.append(answers_dict)
+                print(self.quiz.result_set.first().resultanswer_set.get(
+                    answer=answer).employee_answer)
             questions_dict['answers'] = answers
             questions.append(questions_dict)
         return questions

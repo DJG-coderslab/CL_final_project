@@ -5,7 +5,12 @@
 {% for q in questions%}
 <p class="h4">{{q.content}}</p>
 {% for a in q.answers %}
-    <p><input type="radio" name="employee_choice" value="{{a.id}}"> &nbsp; &nbsp;{{a.content}}</input></p>
+    <p><input type="radio" name="employee_choice" value="{{a.id}}"
+    {% if a.choice %}
+              checked
+              {% else %}
+              {%endif%}
+>{{a.choice}} &nbsp; &nbsp;{{a.content}}</input></p>
 {% endfor %}
 {% endfor %}
 <div>
