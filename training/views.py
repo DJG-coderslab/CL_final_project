@@ -44,13 +44,14 @@ class OneQuestionView(AppLoginRequiredMixin, View):
     def setup_setting(self, request):
         self.employee = User.objects.get(username=request.user)
         self.quiz = self.employee.quiz_set.get(is_active=True)
-        self.paginator = self.prepare_paginator()
+        self.paginator = self.prepare_paginator(self.prepare_questions)
         self.page = request.session.get('question_number')
         current_obj = self.paginator.get_page(self.page)[0]
         self.current_question = Question.objects.get(id=current_obj.get('id'))
     
-    def prepare_paginator(self):
+    def prepare_paginator(self, fn):
         questions = self.prepare_questions()
+        questions = fn()
         paginator = Paginator(questions, 1)
         return paginator
     
@@ -78,7 +79,7 @@ class OneQuestionView(AppLoginRequiredMixin, View):
         self.setup_setting(request)
         self.write_answer(request)
         if request.POST.get('answer_button'):
-            self.paginator = self.prepare_paginator()   # trzeba odświeżyć paginator po zapisie do DB
+            self.paginator = self.prepare_paginator(self.prepare_questions)   # trzeba odświeżyć paginator po zapisie do DB
             page = str(int(self.page) + 1)
             pgn = self.paginator
             page = pgn.num_pages if int(page) > pgn.num_pages else page
@@ -86,23 +87,24 @@ class OneQuestionView(AppLoginRequiredMixin, View):
             request.session['question_number'] = page
             context = {'questions': questions}
             return render(request, 'training/question.html', context=context)
-        elif request.POST.get('end_button'):
-            scores = 0
-            max_points = 0
-            result = Result.objects.get(quiz=self.quiz)
-            for question in self.quiz.question_set.all():
-                max_points += question.points
-                for answer in question.answer_set.all():
-                    is_correct = answer.is_correct
-                    employee_answer = answer.resultanswer_set.get(result=result).employee_answer
-                    if is_correct and employee_answer:
-                        print(f"=== OK ===")
-                        scores += question.points
-            context = {
-                'scores': scores,
-                'max_points': max_points
-            }
-            return render(request, 'training/summary.html', context=context)
+        # elif request.POST.get('end_button'):
+        #     scores = 0
+        #     max_points = 0
+        #     result = Result.objects.get(quiz=self.quiz)
+        #     for question in self.quiz.question_set.all():
+        #         max_points += question.points
+        #         for answer in question.answer_set.all():
+        #             is_correct = answer.is_correct
+        #             employee_answer = answer.resultanswer_set.get(result=result).employee_answer
+        #             if is_correct and employee_answer:
+        #                 print(f"=== OK ===")
+        #                 scores += question.points
+        #     context = {
+        #         'scores': scores,
+        #         'max_points': max_points
+        #     }
+        #     breakpoint()
+        #     return render(request, 'training/summary.html', context=context)
         else:
             return render(request, 'training/tmp.html')
 
@@ -122,6 +124,78 @@ class OneQuestionView(AppLoginRequiredMixin, View):
             questions_dict['answers'] = answers
             questions.append(questions_dict)
         return questions
+
+
+class QuestionSummaryView(OneQuestionView):
+    def __init__(self, *args, **kwargs):
+        self.max_points = None
+        self.scores = None
+        self.questions = None
+        super().__init__(*args, **kwargs)
+        
+    def _check_quiz(self):
+        score = 0
+        max_points = 0
+        result = Result.objects.get(quiz=self.quiz)
+        questions = []
+        for question in self.quiz.question_set.all():
+            questions_dict = {}
+            questions_dict['content'] = question.content
+            max_points += question.points
+            answers = []
+            for answer in question.answer_set.all():
+                answers_dict = {}
+                answers_dict['content'] = answer.content
+                is_correct = answer.is_correct
+                employee_answer = answer.resultanswer_set.get(
+                    result=result).employee_answer
+                answers_dict['is_correct'] = is_correct
+                answers_dict['employee_answer'] = employee_answer
+                if is_correct and employee_answer:
+                    score += question.points
+                    questions_dict['result'] = True
+                answers.append(answers_dict)
+            questions_dict['answers'] = answers
+            questions.append(questions_dict)
+        self.max_points = max_points
+        self.score = score
+        self.questions = questions
+        return questions
+
+    def get(self, request, *args, **kwargs):
+        self.setup_setting(request)
+        self.paginator = self.prepare_paginator(self._check_quiz)
+        page = request.GET.get('page')
+        questions = self.paginator.get_page(page)
+        request.session['checking_question_number'] = page
+        context = {
+            'status_quiz': self.quiz.is_active,
+            'questions': questions
+        }
+        return render(request, 'training/summary.html',
+                      context=context)
+    
+    def post(self, request, *args, **kwargs):
+        self.setup_setting(request)
+        self._check_quiz()
+        # score = 0
+        # max_points = 0
+        # result = Result.objects.get(quiz=self.quiz)
+        # for question in self.quiz.question_set.all():
+        #     max_points += question.points
+        #     for answer in question.answer_set.all():
+        #         is_correct = answer.is_correct
+        #         employee_answer = answer.resultanswer_set.get(
+        #             result=result).employee_answer
+        #         if is_correct and employee_answer:
+        #             score += question.points
+        # self.quiz.is_active = False
+        # self.quiz.save()
+        context = {
+            'score': self.score,
+            'max_points': self.max_points
+        }
+        return render(request, 'training/summary.html', context=context)
 
 
 class Tmp(AppLoginRequiredMixin, View):

@@ -1,0 +1,9 @@
+{% extends 'training/__base__.html' %}
+{% block pagecontent %}
+<div class="h1">Podsumowanie</div>
+<hr>
+
+<div>{{scores}}/{{max_points}}</div>
+<hr>
+    <div><a href="{% url 'tr:question-summary' %}">Moje wyniki</a></div>
+{% endblock %}

@@ -16,6 +16,9 @@
 <div>
     <input type="submit" name="answer_button" value="odpowiedź">
 </div>
+    </form>
+<form action="{% url 'tr:question-summary' %}" method="POST">
+    {% csrf_token %}
     <div>
         <input type="submit" name="end_button" value="koniec">
     </div>

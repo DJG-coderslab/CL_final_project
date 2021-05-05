@@ -1,8 +1,53 @@
 {% extends 'training/__base__.html' %}
 {% block pagecontent %}
 <div class="h1">Podsumowanie</div>
+{% if not status_quiz %}
+<div class="h2">Test jeszcze jest aktywny!</div>
+{% else %}
 <hr>
 
-<div>{{scores}}/{{max_points}}</div>
-
+<div>{{score}}/{{max_points}}</div>
+<hr>
+    <div><a href="{% url 'tr:question-summary' %}">Moje wyniki</a></div>
+<hr>
+<div class="content">
+    {% for q in questions %}
+        <span class="badge
+        {% if q.result %}
+        bg-success
+        {% else %}
+        bg-danger
+        {% endif %}">
+            &nbsp;
+        </span>
+        <p class="h5">{{q.content}}</p>
+        {% for a in q.answers %}
+            <p>{{a.content}}</p>
+        {% endfor %}
+    {% endfor %}
+</div>
+{% endif %}
+<nav aria-label="Page navigation example">
+    <ul class="pagination">
+        {% if questions.has_previous %}
+        <li class="page-item">
+            <a class="page-link" href="?page=1">&laquo; pierwsze</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{questions.previous_page_number}}">poprzednie</a>
+        </li>
+        {% endif %}
+        <li class="page-item page-link">
+            pytanie {{questions.number}} z {{questions.paginator.num_pages}}
+        </li>
+        {% if questions.has_next %}
+        <li class="page-item">
+            <a class="page-link" href="?page={{questions.next_page_number}}">następne</a>
+        </li>
+        <li class="page-item">
+            <a class="page-link" href="?page={{questions.paginator.num_pages}}">ostatnie</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
 {% endblock %}
