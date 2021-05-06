@@ -1,6 +1,7 @@
 
 from collections import defaultdict
 
+from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.mixins import AccessMixin, LoginRequiredMixin
@@ -21,6 +22,16 @@ from training.forms import UserRegisterForm
 User = get_user_model()
 
 
+class IsActiveQuizMixin:
+    def dispatch(self, request, *args, **kwargs):
+        employee = User.objects.get(username=request.user)
+        quiz = employee.quiz_set.all().order_by('date').last()
+        if quiz.is_active:
+            return super().dispatch(request, *args, **kwargs)
+        else:
+            raise PermissionDenied
+
+
 class AppLoginRequiredMixin(LoginRequiredMixin):
     """Settings for application"""
     # TODO Tylko czy to jest prawidłowe działanie? Czy można bezkarnie
@@ -31,7 +42,7 @@ class AppLoginRequiredMixin(LoginRequiredMixin):
     permission_denied_message = "Trzeba się zarejestrować!"
 
 
-class OneQuestionView(AppLoginRequiredMixin, View):
+class OneQuestionView(IsActiveQuizMixin, AppLoginRequiredMixin, View):
    
     def __init__(self, *args, **kwargs):
         self.employee = None
@@ -43,14 +54,13 @@ class OneQuestionView(AppLoginRequiredMixin, View):
     
     def setup_setting(self, request):
         self.employee = User.objects.get(username=request.user)
-        self.quiz = self.employee.quiz_set.get(is_active=True)
+        self.quiz = self.employee.quiz_set.all().order_by('date').last()
         self.paginator = self.prepare_paginator(self.prepare_questions)
         self.page = request.session.get('question_number')
         current_obj = self.paginator.get_page(self.page)[0]
         self.current_question = Question.objects.get(id=current_obj.get('id'))
     
     def prepare_paginator(self, fn):
-        questions = self.prepare_questions()
         questions = fn()
         paginator = Paginator(questions, 1)
         return paginator
@@ -72,7 +82,7 @@ class OneQuestionView(AppLoginRequiredMixin, View):
         page = request.GET.get('page')
         questions = self.paginator.get_page(page)
         request.session['question_number'] = page
-        context = {'questions': questions}
+        context = {'questions': questions, 'practice_title': self.quiz.id}
         return render(request, 'training/question.html', context=context)
     
     def post(self, request, *args, **kwargs):
@@ -116,6 +126,7 @@ class QuestionSummaryView(OneQuestionView):
         super().__init__(*args, **kwargs)
         
     def _check_quiz(self):
+        """prepares the data structure to the template"""
         score = 0
         max_points = 0
         result = Result.objects.get(quiz=self.quiz)
@@ -166,6 +177,8 @@ class QuestionSummaryView(OneQuestionView):
     
     def post(self, request, *args, **kwargs):
         self.setup_setting(request)
+        self.quiz.is_active = False
+        self.quiz.save()
         context = self._prepare_summary(request)
         return render(request, 'training/summary.html', context=context)
 
@@ -180,9 +193,7 @@ class Tmp(AppLoginRequiredMixin, View):
 
 class TmpLogout(View):
     def get(self, request):
-        # breakpoint()
         logout(request)
-        # breakpoint()
         return render(request, 'training/__base__.html')
 
 
@@ -190,7 +201,6 @@ class OkView(View):
     """class only for test, to remove later"""
     def get(self, request):
         print("OkView")
-        # breakpoint()
         return render(request, 'training/__base__.html')
     
     
