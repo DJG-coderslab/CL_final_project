@@ -18,16 +18,16 @@ User = get_user_model()
 
 def q_and_a():
     """function for filling relation question and related answer"""
-    for question in QUESTIONS:
-        q = Question.objects.create(content=f"{question} pytanie")
-        for answer in ANSWERS:
-            Answer.objects.create(
-                question=q,
-                content=f"{question} pytanie, {answer} odpowiedź"
-            )
+    # for question in QUESTIONS:
+    #     q = Question.objects.create(content=f"{question} pytanie")
+    #     for answer in ANSWERS:
+    #         Answer.objects.create(
+    #             question=q,
+    #             content=f"{question} pytanie, {answer} odpowiedź"
+    #         )
     for question in range(77):
         q = Question.objects.create(
-            content=f"Pytanie nr {q}: {faker.paragraph(nb_sentences=5)}"
+            content=f"Pytanie nr {question}: {faker.paragraph(nb_sentences=5)}"
         )
         for a in range(1, randint(3, 6)):
             Answer.objects.create(
