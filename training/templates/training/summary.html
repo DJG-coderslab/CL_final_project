@@ -22,7 +22,15 @@
         </span>
         <p class="h5">{{q.content}}</p>
         {% for a in q.answers %}
-            <p>{{a.content}}</p>
+            <p class="
+            {% if a.is_correct %}
+            bg-success text-white
+            {% elif a.employee_answer %}
+            bg-danger text-white
+            {% endif %}
+            ">
+                {{a.content}}
+            </p>
         {% endfor %}
     {% endfor %}
 </div>
