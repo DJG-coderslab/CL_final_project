@@ -29,7 +29,8 @@ class IsActiveQuizMixin:
         if quiz.is_active:
             return super().dispatch(request, *args, **kwargs)
         else:
-            raise PermissionDenied
+            context = {'error': 'Quiz nie jest już aktywny!'}
+            return render(request, 'training/error.html', context=context)
 
 
 class AppLoginRequiredMixin(LoginRequiredMixin):
