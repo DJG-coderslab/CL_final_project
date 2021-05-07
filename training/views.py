@@ -45,7 +45,9 @@ class AppLoginRequiredMixin(LoginRequiredMixin):
 
 class StartView(View):
     def get(self, request, *args, **kwargs):
-        context = {}
+        context = {
+
+        }
         return render(request, 'training/start.html', context=context)
 
 
