@@ -43,6 +43,12 @@ class AppLoginRequiredMixin(LoginRequiredMixin):
     permission_denied_message = "Trzeba się zarejestrować!"
 
 
+class StartView(View):
+    def get(self, request, *args, **kwargs):
+        context = {}
+        return render(request, 'training/start.html', context=context)
+
+
 class OneQuestionView(IsActiveQuizMixin, AppLoginRequiredMixin, View):
    
     def __init__(self, *args, **kwargs):

@@ -1,0 +1,11 @@
+{% extends 'training/__base__.html' %}
+{% block pagecontent %}
+<div class="display-4"><strong>Test wiedzy</strong></div>
+<hr>
+<div class="display-6" >{{description}}</div>
+<div class="display-6" >{{manual}}</div>
+
+
+<button type="submit" class="btn btn-success btn-lg" formaction="{% url 'tr:register' %}">START</button>
+
+{% endblock %}
