@@ -60,3 +60,7 @@ class ResultAnswer(models.Model):
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
     employee_answer = models.BooleanField(default=False)
 
+
+class QuizDomain(models.Model):
+    name = models.CharField(max_length=255)
+    description = models.TextField()
