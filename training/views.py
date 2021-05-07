@@ -12,7 +12,7 @@ from django.urls import reverse_lazy
 from django.utils import timezone
 from django.views import generic, View
 
-from training.models import Answer, Question, Quiz, Result, ResultAnswer
+from training.models import Question, Quiz, Result, QuizDomain
 from training.setup import QUESTIONS_IN_QUIZ
 # from training.forms import QuestionForm
 # Create your views here.
@@ -45,14 +45,15 @@ class AppLoginRequiredMixin(LoginRequiredMixin):
 
 class StartView(View):
     def get(self, request, *args, **kwargs):
+        qd = QuizDomain.objects.first()
         context = {
-
+            'description': qd.description,
+            'manual': qd.manual
         }
         return render(request, 'training/start.html', context=context)
 
 
-class OneQuestionView(IsActiveQuizMixin, AppLoginRequiredMixin, View):
-   
+class QuestionView(AppLoginRequiredMixin, View):
     def __init__(self, *args, **kwargs):
         self.employee = None
         self.quiz = None
@@ -60,7 +61,7 @@ class OneQuestionView(IsActiveQuizMixin, AppLoginRequiredMixin, View):
         self.current_question = None
         self.page = None
         super().__init__(*args, **kwargs)
-    
+
     def setup_setting(self, request):
         self.employee = User.objects.get(username=request.user)
         self.quiz = self.employee.quiz_set.all().order_by('date').last()
@@ -68,12 +69,36 @@ class OneQuestionView(IsActiveQuizMixin, AppLoginRequiredMixin, View):
         self.page = request.session.get('question_number')
         current_obj = self.paginator.get_page(self.page)[0]
         self.current_question = Question.objects.get(id=current_obj.get('id'))
-    
+
     def prepare_paginator(self, fn):
         questions = fn()
         paginator = Paginator(questions, 1)
         return paginator
-    
+
+    def prepare_questions(self):
+        questions = []
+        for question in self.quiz.question_set.all():
+            questions_dict = {}
+            questions_dict['id'] = question.id
+            questions_dict['content'] = question.content
+            answers = []
+            for answer in question.answer_set.all():
+                answers_dict = {}
+                answers_dict['id'] = answer.id
+                answers_dict['content'] = answer.content
+                answers_dict[
+                    'choice'] = self.quiz.result_set.first(
+            
+                ).resultanswer_set.get(
+                    answer=answer).employee_answer
+                answers.append(answers_dict)
+            questions_dict['answers'] = answers
+            questions.append(questions_dict)
+        return questions
+
+
+class OneQuestionView(IsActiveQuizMixin,  QuestionView):
+   
     def write_answer(self, request):
         answer_id = request.POST.get('employee_choice')
         if answer_id:
@@ -88,7 +113,7 @@ class OneQuestionView(IsActiveQuizMixin, AppLoginRequiredMixin, View):
     
     def get(self, request, *args, **kwargs):
         self.setup_setting(request)
-        page = request.GET.get('page')
+        page = request.GET.get('page') or 1
         questions = self.paginator.get_page(page)
         request.session['question_number'] = page
         context = {'questions': questions, 'practice_title': self.quiz.id}
@@ -109,25 +134,8 @@ class OneQuestionView(IsActiveQuizMixin, AppLoginRequiredMixin, View):
         else:
             return render(request, 'training/tmp.html')
 
-    def prepare_questions(self):
-        questions = []
-        for question in self.quiz.question_set.all():
-            questions_dict = {}
-            questions_dict['id'] = question.id
-            questions_dict['content'] = question.content
-            answers = []
-            for answer in question.answer_set.all():
-                answers_dict = {}
-                answers_dict['id'] = answer.id
-                answers_dict['content'] = answer.content
-                answers_dict['choice'] = self.quiz.result_set.first().resultanswer_set.get(answer=answer).employee_answer
-                answers.append(answers_dict)
-            questions_dict['answers'] = answers
-            questions.append(questions_dict)
-        return questions
 
-
-class QuestionSummaryView(OneQuestionView):
+class QuestionSummaryView(QuestionView):
     def __init__(self, *args, **kwargs):
         self.max_points = None
         self.scores = None
@@ -216,7 +224,7 @@ class OkView(View):
 class RegisterUserView(generic.FormView):
     model = User
     form_class = UserRegisterForm
-    success_url = reverse_lazy('tr:ok')
+    success_url = reverse_lazy('tr:one-question')
     template_name = 'training/register.html'
 
     @staticmethod

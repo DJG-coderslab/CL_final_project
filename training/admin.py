@@ -1,7 +1,7 @@
 from django.contrib import admin
 
 from training.forms import  QuestionF
-from training.models import Answer, Question
+from training.models import Answer, Question, QuizDomain
 
 
 class AnswerInLine(admin.TabularInline):
@@ -18,3 +18,7 @@ class QuestionAdmin(admin.ModelAdmin):
     ]
     inlines = [AnswerInLine]
     
+    
+@admin.register(QuizDomain)
+class QuizDoaminAdmin(admin.ModelAdmin):
+    model = QuizDomain

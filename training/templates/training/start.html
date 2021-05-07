@@ -2,10 +2,11 @@
 {% block pagecontent %}
 <div class="display-4"><strong>Test wiedzy</strong></div>
 <hr>
-<div class="display-6" >{{description}}</div>
-<div class="display-6" >{{manual}}</div>
+<div class="fs-2" >{{description}}</div>
+<hr>
+<div class="fs-4" >{{manual|linebreaks}}</div>
 
 
-<button type="submit" class="btn btn-success btn-lg" formaction="{% url 'tr:register' %}">START</button>
+<a class="btn btn-success btn-lg stretched_link" href="{% url 'tr:register' %}">START</a>
 
 {% endblock %}
