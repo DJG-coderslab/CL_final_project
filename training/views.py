@@ -13,7 +13,7 @@ from django.utils import timezone
 from django.views import generic, View
 
 from training.models import Question, Quiz, Result, QuizDomain
-from training.setup import QUESTIONS_IN_QUIZ
+from training.setup import PASS_RATE, QUESTIONS_IN_QUIZ
 # from training.forms import QuestionForm
 # Create your views here.
 
@@ -140,6 +140,7 @@ class QuestionSummaryView(QuestionView):
         self.max_points = None
         self.scores = None
         self.questions = None
+        self.rate = None
         super().__init__(*args, **kwargs)
         
     def _check_quiz(self):
@@ -178,11 +179,15 @@ class QuestionSummaryView(QuestionView):
         page = request.GET.get('page')
         questions = self.paginator.get_page(page)
         request.session['checking_question_number'] = page
+        rate = round(self.score/self.max_points, 2)
+        is_pass = False if rate < PASS_RATE else True
         context = {
             'score': self.score,
             'max_points': self.max_points,
             'status_quiz': self.quiz.is_active,
-            'questions': questions
+            'questions': questions,
+            'rate': rate * 100,
+            'is_pass': is_pass
         }
         return context
 

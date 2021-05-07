@@ -6,7 +6,21 @@
 {% else %}
 <hr>
 
-<div class="h2">{{score}}/{{max_points}}</div>
+<div class="fs-3 row">
+    <div class="col">
+        {{rate}}% &nbsp;({{score}}/{{max_points}})
+    </div>
+    <div class="col">
+        {% if not is_pass %}
+        To za mało do zaliczenia testu
+        {% else %}
+        Gratulacje! Test zaliczony
+        {% endif %}
+    </div>
+    <div class="col">
+        <a class="btn btn-success btn-lg stretched_link" href="{% url 'tr:tmp' %}">KONIEC</a>
+    </div>
+</div>
 <hr>
 <div class="content">
     {% for q in questions %}
