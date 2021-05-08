@@ -23,8 +23,9 @@ User = get_user_model()
 
 
 class IsActiveQuizMixin:
+    """Mixin for checking if particuler Quiz is active"""
     def dispatch(self, request, *args, **kwargs):
-        employee = User.objects.get(username=request.user)
+        employee = request.user
         quiz = employee.quiz_set.all().order_by('date').last()
         if quiz.is_active:
             return super().dispatch(request, *args, **kwargs)
@@ -35,15 +36,12 @@ class IsActiveQuizMixin:
 
 class AppLoginRequiredMixin(LoginRequiredMixin):
     """Settings for application"""
-    # TODO Tylko czy to jest prawidłowe działanie? Czy można bezkarnie
-    #  nadpisywac klasę jak metodę?
-    #  Jednak nie, lepiej używać swoich nazw, bo po czasie będzie problem,
-    #  gdzie szukać, nie będzie jednoznaczności
     login_url = reverse_lazy('tr:register')
     permission_denied_message = "Trzeba się zarejestrować!"
 
 
 class StartView(View):
+    """View for first page of application"""
     def get(self, request, *args, **kwargs):
         qd = QuizDomain.objects.first()
         context = {
@@ -54,16 +52,10 @@ class StartView(View):
 
 
 class QuestionView(AppLoginRequiredMixin, View):
-    def __init__(self, *args, **kwargs):
-        self.employee = None
-        self.quiz = None
-        self.paginator = None
-        self.current_question = None
-        self.page = None
-        super().__init__(*args, **kwargs)
-
+    """Parent class with common settings and methods"""
     def setup_setting(self, request):
-        self.employee = User.objects.get(username=request.user)
+        """settings for Views"""
+        self.employee = request.user
         self.quiz = self.employee.quiz_set.all().order_by('date').last()
         self.paginator = self.prepare_paginator(self.prepare_questions)
         self.page = request.session.get('question_number')
@@ -71,11 +63,16 @@ class QuestionView(AppLoginRequiredMixin, View):
         self.current_question = Question.objects.get(id=current_obj.get('id'))
 
     def prepare_paginator(self, fn):
+        """Parameters for paginator
+            
+            the fn there is a function for creating question's list
+        """
         questions = fn()
         paginator = Paginator(questions, 1)
         return paginator
 
     def prepare_questions(self):
+        """Creating list of questions with answers"""
         questions = []
         for question in self.quiz.question_set.all():
             questions_dict = {}
@@ -98,9 +95,13 @@ class QuestionView(AppLoginRequiredMixin, View):
 
 
 class OneQuestionView(IsActiveQuizMixin,  QuestionView):
-   
+    """The view with question for which the employee need to answer"""
     def write_answer(self, request):
+        """Writing the answer to DB"""
         answer_id = request.POST.get('employee_choice')
+        # Tu walidacja niewiele zmienia. Chodzi tylko o informację, czy ta
+        # odpowiedź została zaznaczona przez pracownika. Ten wybór anuluje
+        # poprzednie i zawsze jest zero lub jedna wybrana odpowiedź
         if answer_id:
             result = Result.objects.get(quiz=self.quiz)
             for answer in self.current_question.answer_set.all():
@@ -136,13 +137,8 @@ class OneQuestionView(IsActiveQuizMixin,  QuestionView):
 
 
 class QuestionSummaryView(QuestionView):
-    def __init__(self, *args, **kwargs):
-        self.max_points = None
-        self.scores = None
-        self.questions = None
-        self.rate = None
-        super().__init__(*args, **kwargs)
-        
+    """The view with summary and questions with marked answer which is correct
+       and employee's answer"""
     def _check_quiz(self):
         """prepares the data structure to the template"""
         score = 0
