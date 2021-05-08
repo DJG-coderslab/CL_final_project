@@ -3,6 +3,8 @@ import pytest
 
 from django.test import Client
 
+from .utils import create_q_and_a, faker_employee
+
 
 @pytest.fixture
 def client():
@@ -16,4 +18,6 @@ def client():
 
 @pytest.fixture
 def setup_db():
-    pass
+    faker_employee()
+    create_q_and_a()
+
