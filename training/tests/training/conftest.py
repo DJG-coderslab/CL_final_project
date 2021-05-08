@@ -13,3 +13,7 @@ def client():
     """
     client = Client()
     return client
+
+@pytest.fixture
+def setup_db():
+    pass
