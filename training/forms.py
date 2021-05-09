@@ -27,6 +27,7 @@ class UserRegisterForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['username'].widget.attrs['placeholder'] = '8000511'
+        self.fields['username'].help_text = ""
         self.fields['first_name'].widget.attrs['placeholder'] = 'Jan'
         self.fields['last_name'].widget.attrs['placeholder'] = 'Nowak'
        
@@ -38,4 +39,3 @@ class UserRegisterForm(forms.ModelForm):
             'first_name': 'imię',
             'last_name': 'nazwisko'
         }
-        
