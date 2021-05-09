@@ -9,6 +9,11 @@ from training.setup import QUESTIONS_IN_QUIZ
 User = get_user_model()
 
 
+def test_input(client):
+    resp = client.get("/register/")
+    assert resp.status_code == 200
+
+
 @pytest.mark.django_db
 def test_non_exists_user(client, setup_db):
     new_user = {
@@ -23,6 +28,7 @@ def test_non_exists_user(client, setup_db):
     assert Quiz.objects.filter(user=user_from_db).count() == 1
     assert Quiz.objects.filter(user=user_from_db).first().question_set.count() == QUESTIONS_IN_QUIZ
     assert Quiz.objects.filter(user=user_from_db).first().is_active is True
+    assert user_from_db.is_authenticated is True
   
   
 @pytest.mark.django_db
@@ -34,7 +40,7 @@ def test_exists_user(client, setup_db):
     assert resp.status_code == 302
     assert user.quiz_set.count() == 1
     assert user.quiz_set.first().is_active is True
-  
+    assert user.is_authenticated is True
    
 @pytest.mark.django_db
 def test_no_username(client, setup_db):
