@@ -29,7 +29,7 @@ def q_and_a():
         q = Question.objects.create(
             content=f"Pytanie nr {question}: {faker.paragraph(nb_sentences=5)}"
         )
-        for a in range(1, randint(3, 6)):
+        for a in range(1, randint(4, 7)):
             Answer.objects.create(
                 question=q,
                 content=f"Odp nr {a}: {faker.paragraph(nb_sentences=3)}"
@@ -76,4 +76,3 @@ def generate_quiz(employee):
 def quiz_for_users():
     for employee in User.objects.filter(username__contains='82'):
         generate_quiz(employee)
-        

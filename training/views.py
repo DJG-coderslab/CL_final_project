@@ -52,7 +52,7 @@ class StartView(View):
         return render(request, 'training/start.html', context=context)
 
 
-class QuestionView(AppLoginRequiredMixin, View):
+class QuestionView(AppLoginRequiredMixin, IsActiveQuizMixin, View):
     """Parent class with common settings and methods"""
     def setup_setting(self, request):
         """settings for Views"""
@@ -95,7 +95,7 @@ class QuestionView(AppLoginRequiredMixin, View):
         return questions
 
 
-class OneQuestionView(IsActiveQuizMixin,  QuestionView):
+class OneQuestionView(QuestionView):
     """The view with question for which the employee need to answer"""
     def write_answer(self, request):
         """Writing the answer to DB"""
