@@ -23,12 +23,12 @@ User = get_user_model()
 
 
 class IsActiveQuizMixin:
-    """Mixin for checking if particuler Quiz is active"""
+    """Mixin for checking if particular Quiz is active"""
     def dispatch(self, request, *args, **kwargs):
-        resp = super().dispatch(request, *args, **kwargs)
         employee = request.user
         quiz = employee.quiz_set.all().order_by('date').last()
         if quiz.is_active:
+            resp = super().dispatch(request, *args, **kwargs)
             return resp
         else:
             context = {'error': 'Quiz nie jest już aktywny!'}
