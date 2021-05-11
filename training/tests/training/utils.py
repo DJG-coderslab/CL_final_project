@@ -14,10 +14,9 @@ def faker_employee():
         first_name=faker.first_name(),
         last_name=faker.last_name()
     )
-    
+
+
 def create_q_and_a():
     create_groups()
     q_and_a()
     set_correct_answer()
-    
-    
