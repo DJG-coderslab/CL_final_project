@@ -1,11 +1,7 @@
 
-from collections import defaultdict
-
-from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.contrib.auth import get_user_model, login, logout
 from django.contrib.auth.mixins import AccessMixin, LoginRequiredMixin
-from django.contrib.auth.views import LoginView
 from django.contrib.auth.models import Group
 from django.shortcuts import render
 from django.urls import reverse_lazy
@@ -15,11 +11,21 @@ from django.views import generic, View
 from training.models import Question, Quiz, Result, QuizDomain
 from training.setup import PASS_RATE, QUESTIONS_IN_QUIZ
 # from training.forms import QuestionForm
-# Create your views here.
 
 from training.forms import UserRegisterForm
 
 User = get_user_model()
+
+
+class StartView(View):
+    """View for first page of application"""
+    def get(self, request, *args, **kwargs):
+        qd = QuizDomain.objects.first()
+        context = {
+            'description': qd.description,
+            'manual': qd.manual
+        }
+        return render(request, 'training/start.html', context=context)
 
 
 class IsActiveQuizMixin:
@@ -39,17 +45,6 @@ class AppLoginRequiredMixin(LoginRequiredMixin):
     """Settings for application"""
     login_url = reverse_lazy('tr:register')
     permission_denied_message = "Trzeba się zarejestrować!"
-
-
-class StartView(View):
-    """View for first page of application"""
-    def get(self, request, *args, **kwargs):
-        qd = QuizDomain.objects.first()
-        context = {
-            'description': qd.description,
-            'manual': qd.manual
-        }
-        return render(request, 'training/start.html', context=context)
 
 
 class QuestionView(AppLoginRequiredMixin, IsActiveQuizMixin, View):
@@ -202,27 +197,6 @@ class QuestionSummaryView(QuestionView):
         return render(request, 'training/summary.html', context=context)
 
 
-class Tmp(AppLoginRequiredMixin, View):
-    def get(self, request, *args, **kwargs):
-        context = {
-            'questions': ['nic']
-        }
-        return render(request, 'training/tmp.html', context=context)
-
-
-class TmpLogout(View):
-    def get(self, request):
-        logout(request)
-        return render(request, 'training/base.html')
-
-
-class OkView(View):
-    """class only for test, to remove later"""
-    def get(self, request):
-        print("OkView")
-        return render(request, 'training/base.html')
-    
-    
 class RegisterUserView(generic.FormView):
     model = User
     form_class = UserRegisterForm
@@ -291,5 +265,25 @@ class RegisterUserView(generic.FormView):
                 return self.form_valid(form)
 
 
-class QuestionView(generic.ListView):
-    pass
+class Tmp(AppLoginRequiredMixin, View):
+    def get(self, request, *args, **kwargs):
+        context = {
+            'questions': ['nic']
+        }
+        return render(request, 'training/tmp.html', context=context)
+
+
+class TmpLogout(View):
+    def get(self, request):
+        logout(request)
+        return render(request, 'training/base.html')
+
+
+class OkView(View):
+    """class only for test, to remove later"""
+    
+    def get(self, request):
+        print("OkView")
+        return render(request, 'training/base.html')
+
+
