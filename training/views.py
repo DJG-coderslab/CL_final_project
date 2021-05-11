@@ -47,7 +47,7 @@ class AppLoginRequiredMixin(LoginRequiredMixin):
     permission_denied_message = "Trzeba się zarejestrować!"
 
 
-class QuestionView(AppLoginRequiredMixin, IsActiveQuizMixin, View):
+class QuestionView(View):
     """Parent class with common settings and methods"""
     def setup_setting(self, request):
         """settings for Views"""
@@ -90,7 +90,7 @@ class QuestionView(AppLoginRequiredMixin, IsActiveQuizMixin, View):
         return questions
 
 
-class OneQuestionView(QuestionView):
+class OneQuestionView(AppLoginRequiredMixin, IsActiveQuizMixin, QuestionView):
     """The view with question for which the employee need to answer"""
     def write_answer(self, request):
         """Writing the answer to DB"""
@@ -132,7 +132,7 @@ class OneQuestionView(QuestionView):
             return render(request, 'training/tmp.html')
 
 
-class QuestionSummaryView(QuestionView):
+class QuestionSummaryView(AppLoginRequiredMixin, QuestionView):
     """The view with summary and questions with marked answer which is correct
        and employee's answer"""
     def _check_quiz(self):
