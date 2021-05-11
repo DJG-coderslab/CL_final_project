@@ -2,7 +2,7 @@ import pytest
 
 # from .conftest import client
 from training.setup import QUESTIONS_IN_QUIZ
-from training.models import Quiz
+from training.models import Quiz, Question
 
 
 def test_input_no_user(client):
@@ -33,13 +33,20 @@ def test_post_answer(registered_user):
     client = registered_user
     resp = client.get("/question/")
     ctx = resp.context['questions']
-    q_id = ctx[0].id
+    q_id = ctx[0]['id']
     choice = ctx[0]['answers'][2]['id']
     start_page = ctx.number
-    assert all()
-    cookies = client.cookies
+    question = Question.objects.get(id=q_id)
+    quiz = question.quiz.first()
+    result = quiz.result_set.first()
+    assert result.resultanswer_set.get(
+        answer_id=choice).employee_answer is False
     resp_post = client.post("/question/", {
         'employee_choice': choice,
         'answer_button': 'odpowiedź'
     })
+    assert result.resultanswer_set.get(
+        answer_id=choice).employee_answer is True
     assert resp_post.context['questions'].number == start_page + 1
+
+
