@@ -213,14 +213,14 @@ class Tmp(AppLoginRequiredMixin, View):
 class TmpLogout(View):
     def get(self, request):
         logout(request)
-        return render(request, 'training/__base__.html')
+        return render(request, 'training/base.html')
 
 
 class OkView(View):
     """class only for test, to remove later"""
     def get(self, request):
         print("OkView")
-        return render(request, 'training/__base__.html')
+        return render(request, 'training/base.html')
     
     
 class RegisterUserView(generic.FormView):
