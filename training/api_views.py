@@ -10,3 +10,7 @@ class StartView(APIView):
         return Response(dat)
 
 
+class Register(APIView):
+    def post(self, request, username, format=None):
+        print(username)
+        return Response()
