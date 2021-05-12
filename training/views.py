@@ -13,6 +13,7 @@ from training.setup import PASS_RATE, QUESTIONS_IN_QUIZ
 # from training.forms import QuestionForm
 
 from training.forms import UserRegisterForm
+from training import business_logic as bl
 
 User = get_user_model()
 
@@ -135,6 +136,7 @@ class OneQuestionView(AppLoginRequiredMixin, IsActiveQuizMixin, QuestionView):
 class QuestionSummaryView(AppLoginRequiredMixin, QuestionView):
     """The view with summary and questions with marked answer which is correct
        and employee's answer"""
+    # TODO QuizSummary...
     def _check_quiz(self):
         """prepares the data structure to the template"""
         score = 0
@@ -197,32 +199,11 @@ class QuestionSummaryView(AppLoginRequiredMixin, QuestionView):
         return render(request, 'training/summary.html', context=context)
 
 
-class RegisterUserView(generic.FormView):
+class RegisterUserView(bl.Register, generic.FormView):
     model = User
     form_class = UserRegisterForm
     success_url = reverse_lazy('tr:one-question')
     template_name = 'training/register.html'
-
-    @staticmethod
-    def _create_quiz(employee=None):
-        """Creating quiz per user"""
-        questions = set()
-        while len(questions) < QUESTIONS_IN_QUIZ:
-            questions.add(Question.objects.all().order_by('?').first())
-        result_object = Result.objects.create()
-        quiz_object = Quiz.objects.create()
-        quiz_name = (f"{employee.last_name}_{employee.first_name}_"
-                     f"{quiz_object.date.strftime('%Y-%m-%d')}")
-        quiz_object.name = quiz_name
-        quiz_object.is_active = True
-        quiz_object.save()
-        quiz_object.user.add(employee)
-        result_object.user.add(employee)
-        result_object.quiz.add(quiz_object)
-        for question in questions:
-            quiz_object.question_set.add(question)
-            for answer in question.answer_set.all():
-                result_object.answer.add(answer)
 
     def form_valid(self, form):
         cd = form.cleaned_data
