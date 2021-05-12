@@ -62,5 +62,8 @@ def test_is_not_active_quiz(registered_user):
     quiz.is_active = False
     quiz.save()
     resp = client.get("/question/")
-    breakpoint()
     assert resp.context['error'] is not None
+    # TODO
+    #  potrzeba wymyślić jak sprawdzić, że wysłana
+    #  jest strona error,
+    
