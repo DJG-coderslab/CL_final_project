@@ -1,6 +1,7 @@
 from django.urls import path
 
 from training import views as v
+from training import api_views as api
 
 
 app_name = 'training'
@@ -15,4 +16,6 @@ urlpatterns = [
          name='question-summary'),
     
     path('tmp/', v.Tmp.as_view(), name='tmp'),
+    
+    path('api/start/', api.StartView.as_view(), name='api-start'),
 ]
