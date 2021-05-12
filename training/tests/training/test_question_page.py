@@ -50,3 +50,17 @@ def test_post_answer(registered_user):
     assert resp_post.context['questions'].number == start_page + 1
 
 
+@pytest.mark.django_db
+def test_is_not_active_quiz(registered_user):
+    client = registered_user
+    resp = client.get("/question/")
+    ctx = resp.context['questions']
+    question_id = ctx[0]['id']
+    question = Question.objects.get(id=question_id)
+    quiz = question.quiz.first()
+    assert quiz.is_active is True
+    quiz.is_active = False
+    quiz.save()
+    resp = client.get("/question/")
+    breakpoint()
+    assert resp.context['error'] is not None
