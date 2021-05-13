@@ -48,7 +48,7 @@ class AppLoginRequiredMixin(LoginRequiredMixin):
     permission_denied_message = "Trzeba się zarejestrować!"
 
 
-class QuestionView(View):
+class QuestionView(bl.Question, View):
     """Parent class with common settings and methods"""
     def setup_setting(self, request):
         """settings for Views"""
@@ -68,46 +68,9 @@ class QuestionView(View):
         paginator = Paginator(questions, 1)
         return paginator
 
-    def prepare_questions(self):
-        """Creating list of questions with answers"""
-        questions = []
-        for question in self.quiz.question_set.all():
-            questions_dict = {}
-            questions_dict['id'] = question.id
-            questions_dict['content'] = question.content
-            answers = []
-            for answer in question.answer_set.all():
-                answers_dict = {}
-                answers_dict['id'] = answer.id
-                answers_dict['content'] = answer.content
-                answers_dict[
-                    'choice'] = self.quiz.result_set.first(
-            
-                ).resultanswer_set.get(
-                    answer=answer).employee_answer
-                answers.append(answers_dict)
-            questions_dict['answers'] = answers
-            questions.append(questions_dict)
-        return questions
-
 
 class OneQuestionView(AppLoginRequiredMixin, IsActiveQuizMixin, QuestionView):
     """The view with question for which the employee need to answer"""
-    def write_answer(self, request):
-        """Writing the answer to DB"""
-        answer_id = request.POST.get('employee_choice')
-        # Tu walidacja niewiele zmienia. Chodzi tylko o informację, czy ta
-        # odpowiedź została zaznaczona przez pracownika. Ten wybór anuluje
-        # poprzednie i zawsze jest zero lub jedna wybrana odpowiedź
-        if answer_id:
-            result = Result.objects.get(quiz=self.quiz)
-            for answer in self.current_question.answer_set.all():
-                obj = result.resultanswer_set.get(answer=answer)
-                obj.employee_answer = False
-                obj.save()
-            result_answer = result.resultanswer_set.get(answer=answer_id)
-            result_answer.employee_answer = True
-            result_answer.save()
     
     def get(self, request, *args, **kwargs):
         self.setup_setting(request)
@@ -133,57 +96,10 @@ class OneQuestionView(AppLoginRequiredMixin, IsActiveQuizMixin, QuestionView):
             return render(request, 'training/tmp.html')
 
 
-class QuestionSummaryView(AppLoginRequiredMixin, QuestionView):
+class QuestionSummaryView(AppLoginRequiredMixin, bl.QuizSummary, QuestionView):
     """The view with summary and questions with marked answer which is correct
        and employee's answer"""
     # TODO QuizSummary...
-    def _check_quiz(self):
-        """prepares the data structure to the template"""
-        score = 0
-        max_points = 0
-        result = Result.objects.get(quiz=self.quiz)
-        questions = []
-        for question in self.quiz.question_set.all():
-            questions_dict = {}
-            questions_dict['content'] = question.content
-            max_points += question.points
-            answers = []
-            for answer in question.answer_set.all():
-                answers_dict = {}
-                answers_dict['content'] = answer.content
-                is_correct = answer.is_correct
-                employee_answer = answer.resultanswer_set.get(
-                    result=result).employee_answer
-                answers_dict['is_correct'] = is_correct
-                answers_dict['employee_answer'] = employee_answer
-                if is_correct and employee_answer:
-                    score += question.points
-                    questions_dict['result'] = True
-                answers.append(answers_dict)
-            questions_dict['answers'] = answers
-            questions.append(questions_dict)
-        self.max_points = max_points
-        self.score = score
-        self.questions = questions
-        return questions
-
-    def _prepare_summary(self, request):
-        """function to prepare summary of test"""
-        self.paginator = self.prepare_paginator(self._check_quiz)
-        page = request.GET.get('page')
-        questions = self.paginator.get_page(page)
-        request.session['checking_question_number'] = page
-        rate = round(self.score/self.max_points, 2)
-        is_pass = False if rate < PASS_RATE else True
-        context = {
-            'score': self.score,
-            'max_points': self.max_points,
-            'status_quiz': self.quiz.is_active,
-            'questions': questions,
-            'rate': rate * 100,
-            'is_pass': is_pass
-        }
-        return context
 
     def get(self, request, *args, **kwargs):
         self.setup_setting(request)
