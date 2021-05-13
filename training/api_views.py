@@ -1,7 +1,8 @@
+from django.contrib.auth import login
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from training import models, serializers
+from training import models, serializers, business_logic as bl
 
 
 class StartView(APIView):
@@ -10,7 +11,9 @@ class StartView(APIView):
         return Response(dat)
 
 
-class Register(APIView):
+class Register(bl.Register, APIView):
     def post(self, request, username, format=None):
         print(username)
+        employee = self.handle_register_data(form_data=request.data)
+        login(self.request, employee)
         return Response()
