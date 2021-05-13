@@ -7,7 +7,7 @@ from training import models, serializers, business_logic as bl
 
 class StartView(APIView):
     def get(self, request, format=None):
-        dat = serializers.StartPage(models.QuizDomain.objects.first()).data
+        dat = serializers.StartPageSerializer(models.QuizDomain.objects.first()).data
         return Response(dat)
 
 

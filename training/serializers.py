@@ -3,14 +3,31 @@ from rest_framework import serializers
 from training import models
 
 
-class StartPage(serializers.ModelSerializer):
+class StartPageSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.QuizDomain
         fields = ['description', 'manual']
         
     
-class Quiz(serializers.ModelSerializer):
+class QuestionSerializer(serializers.ModelSerializer):
+    answer_set = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    
+    class Meta:
+        model = models.Question
+        fields = ['id', 'content', 'answer_set']
+
+
+class QuizSerializer(serializers.ModelSerializer):
+    question_set = QuestionSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = models.Quiz
+        fields = ['id', 'is_active', 'question_set']
+
+
+class OnlyQuiz(serializers.ModelSerializer):
     question_set = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    
     class Meta:
         model = models.Quiz
         fields = ['id', 'is_active', 'question_set']
