@@ -1,6 +1,11 @@
+from django.contrib.auth import login, get_user_model
+from django.contrib.auth.models import Group
+from django.utils import timezone
 
-from training.setup import QUESTIONS_IN_QUIZ
+from training.setup import QUESTIONS_IN_QUIZ, PASS_RATE
 from training import models
+
+User = get_user_model()
 
 
 class Register:
@@ -27,7 +32,32 @@ class Register:
             for answer in question.answer_set.all():
                 result_object.answer.add(answer)
                 
-                
+    def handle_register_data(self, form_data=None):
+        """The form_date is a dictionary with:
+            username,
+            last_name,
+            first_name"""
+        cd = form_data
+        employee, _ = User.objects.update_or_create(
+            username=cd.get('username'),
+            defaults=cd
+        )
+        employee.last_login = timezone.now()
+        employee.save()
+        Group.objects.get(name='employees').user_set.add(employee)
+        new_quiz = True
+        today = timezone.datetime.today().strftime('%Y-%m-%d')
+        for quiz in employee.quiz_set.all():
+            if quiz.is_active:
+                if today == quiz.date.strftime('%Y-%m-%d'):
+                    new_quiz = False
+                else:
+                    quiz.is_active = False
+                    quiz.save()
+        if new_quiz:
+            self._create_quiz(employee=employee)
+        return employee
+
 
 class Question:
 

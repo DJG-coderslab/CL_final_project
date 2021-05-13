@@ -96,7 +96,7 @@ class OneQuestionView(AppLoginRequiredMixin, IsActiveQuizMixin, QuestionView):
             return render(request, 'training/tmp.html')
 
 
-class QuestionSummaryView(AppLoginRequiredMixin, bl.QuizSummary, QuestionView):
+class QuizSummaryView(AppLoginRequiredMixin, bl.QuizSummary, QuestionView):
     """The view with summary and questions with marked answer which is correct
        and employee's answer"""
     # TODO QuizSummary...
@@ -123,24 +123,7 @@ class RegisterUserView(bl.Register, generic.FormView):
 
     def form_valid(self, form):
         cd = form.cleaned_data
-        employee, _ = User.objects.update_or_create(
-            username=cd.get('username'),
-            defaults=cd
-        )
-        employee.last_login = timezone.now()
-        employee.save()
-        Group.objects.get(name='employees').user_set.add(employee)
-        new_quiz = True
-        today = timezone.datetime.today().strftime('%Y-%m-%d')
-        for quiz in employee.quiz_set.all():
-            if quiz.is_active:
-                if today == quiz.date.strftime('%Y-%m-%d'):
-                    new_quiz = False
-                else:
-                    quiz.is_active = False
-                    quiz.save()
-        if new_quiz:
-            self._create_quiz(employee=employee)
+        employee = self.handle_register_data(form_data=cd)
         login(self.request, employee)
         return super().form_valid(form)
 
