@@ -8,9 +8,15 @@ class StartPageSerializer(serializers.ModelSerializer):
         model = models.QuizDomain
         fields = ['description', 'manual']
         
+
+class AnswerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Answer
+        fields = ['id', 'content', 'is_correct']
+
     
 class QuestionSerializer(serializers.ModelSerializer):
-    answer_set = serializers.PrimaryKeyRelatedField(many=True, read_only=True)
+    answer_set = AnswerSerializer(many=True, read_only=True)
     
     class Meta:
         model = models.Question
