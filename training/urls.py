@@ -18,6 +18,7 @@ urlpatterns = [
     path('tmp/', v.Tmp.as_view(), name='tmp'),
     
     path('api/start/', api.StartView.as_view(), name='api-start'),
-    path('api/register/<str:username>/', api.Register.as_view(),
+    path('api/register/<str:username>/', api.RegisterView.as_view(),
          name='api-register'),
+    path('api/questions/', api.QuestionsView.as_view(), name='api-questions'),
 ]

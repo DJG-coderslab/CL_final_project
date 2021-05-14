@@ -11,9 +11,16 @@ class StartView(APIView):
         return Response(dat)
 
 
-class Register(bl.Register, APIView):
+class RegisterView(bl.Register, APIView):
     def post(self, request, username, format=None):
         print(username)
         employee = self.handle_register_data(form_data=request.data)
         login(self.request, employee)
         return Response()
+
+
+class QuestionsView(bl.Question, APIView):
+    def get(self, request, format=None):
+        quiz = models.Quiz.objects.get(id='e000f792-4294-4d90-be6f-f68b1106c7df')
+        ser = serializers.QuizSerializer(quiz, context={'ala': 'kot'}).data
+        return Response(ser)
