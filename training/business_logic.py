@@ -60,7 +60,12 @@ class Register:
 
 
 class Question:
-
+    
+    def setup_setting(self, request):
+        """settings for Views"""
+        self.employee = request.user
+        self.quiz = self.employee.quiz_set.all().order_by('date').last()
+    
     def prepare_questions(self):
         """Creating list of questions with answers"""
         questions = []
@@ -102,7 +107,7 @@ class QuizSummary:
         """prepares the data structure to the template"""
         score = 0
         max_points = 0
-        result = Result.objects.get(quiz=self.quiz)
+        result = models.Result.objects.get(quiz=self.quiz)
         questions = []
         for question in self.quiz.question_set.all():
             questions_dict = {}

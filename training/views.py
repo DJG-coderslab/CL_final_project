@@ -52,8 +52,9 @@ class QuestionView(bl.Question, View):
     """Parent class with common settings and methods"""
     def setup_setting(self, request):
         """settings for Views"""
-        self.employee = request.user
-        self.quiz = self.employee.quiz_set.all().order_by('date').last()
+        # self.employee = request.user
+        # self.quiz = self.employee.quiz_set.all().order_by('date').last()
+        super().setup_settings(request)
         self.paginator = self.prepare_paginator(self.prepare_questions)
         self.page = request.session.get('question_number')
         current_obj = self.paginator.get_page(self.page)[0]
@@ -99,7 +100,6 @@ class OneQuestionView(AppLoginRequiredMixin, IsActiveQuizMixin, QuestionView):
 class QuizSummaryView(AppLoginRequiredMixin, bl.QuizSummary, QuestionView):
     """The view with summary and questions with marked answer which is correct
        and employee's answer"""
-    # TODO QuizSummary...
 
     def get(self, request, *args, **kwargs):
         self.setup_setting(request)

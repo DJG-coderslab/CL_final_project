@@ -21,6 +21,11 @@ class RegisterView(bl.Register, APIView):
 
 class QuestionsView(bl.Question, APIView):
     def get(self, request, format=None):
-        quiz = models.Quiz.objects.get(id='e000f792-4294-4d90-be6f-f68b1106c7df')
-        ser = serializers.QuizSerializer(quiz, context={'ala': 'kot'}).data
+        self.setup_setting(request)
+        breakpoint()
+        ser = serializers.QuizSerializer(self.quiz).data
         return Response(ser)
+    
+    def post(self, request, formt=None):
+        print(request.data)
+        pass
