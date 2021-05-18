@@ -5,6 +5,8 @@ from rest_framework.views import APIView
 from training import models, serializers, business_logic as bl
 
 
+"""  hR4KUliv.v3h5WnFoDGT08425cpcaohexz8zj6V1d  """
+
 class StartView(APIView):
     def get(self, request, format=None):
         dat = serializers.StartPageSerializer(models.QuizDomain.objects.first()).data
