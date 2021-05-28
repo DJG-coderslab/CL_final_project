@@ -5,3 +5,4 @@ Faker==8.1.0
 ipython==7.22.0
 pytest-django==4.2.0
 pytest~=6.2.3
+djangorestframework-api-key==2.*
